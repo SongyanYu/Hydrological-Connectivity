@@ -64,6 +64,18 @@ PCA.species.disc[,-1][PCA.species.disc[,-1]>0]<-1
 PCA.species.disc[PCA.species.disc[]<0]<-0
 PCA.species.disc$PCA.naive<-apply(PCA.species.disc[,-1],1,sum)
 
+# Species richness (PCA for how many number of species)
+PCA.species.disc$PCA.naive[PCA.species.disc$PCA.naive<6]<-4
+PCA.species.disc$PCA.naive[PCA.species.disc$PCA.naive>=6&PCA.species.disc$PCA.naive<=10]<-3
+PCA.species.disc$PCA.naive[PCA.species.disc$PCA.naive>=11&PCA.species.disc$PCA.naive<=15]<-2
+PCA.species.disc$PCA.naive[PCA.species.disc$PCA.naive>=16]<-1
+
+# Unique endemism
+# Assuming the first three speices were endemic species to SEQ
+species.endemic<-c("AmbAga","AngAus","AngRei")
+n<-match(species.endemic,colnames(PCA.species.disc))
+PCA.species.disc$PCA.endemic<-rowSums(PCA.species.disc[,n])
+
 # 4. Combine Ensemble models (river networks) with "PCA.speces.disc" for visualisation.
 plot(sdm)
 names(sdm)
