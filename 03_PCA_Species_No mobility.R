@@ -13,7 +13,7 @@ setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
 library(maptools)
 sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/Ensemble_forecasts.shp")
 
-# 1.2 Annual PDA within SEQ
+# 1.2 Annual PCA within SEQ
 PCA<-readShapeLines(fn="Data/Shapfile/Threshold of quant 0.5/PCA_Water only_sw08_fp05.shp")
 
 sum(sdm$SEGMENTNO %in% PCA$SegmentNo)==nrow(sdm)  # should be "TRUE", meaning all segments in sdm is a subset of PCA.
@@ -56,13 +56,15 @@ species.name<-colnames(sdm.species)[-1]
 colnames(PCA.species.df)[-1]<-species.name
 PCA.species.df[is.na(PCA.species.df)]<-0
 
+# top 75% frequency of being a PCA of a species is selected as PCA2
 PCA.species.disc<-PCA.species.df
-PCA.species.disc[,-1][PCA.species.disc[,-1]<25]<-4
-PCA.species.disc[,-1][PCA.species.disc[,-1]>=25&PCA.species.disc[,-1]<50]<-3
-PCA.species.disc[,-1][PCA.species.disc[,-1]>=50&PCA.species.disc[,-1]<75]<-2
-PCA.species.disc[,-1][PCA.species.disc[,-1]>=75]<-1
+threshold.frequency<-apply(PCA.species.disc[,-1],2,FUN = function(x) quantile(x,probs = 0.75))
+PCA.species.disc<-data.frame(SegNo=PCA.species.disc$SegNo,t(apply(PCA.species.disc[,-1],1,function(x) x-threshold.frequency)))
+PCA.species.disc[,-1][PCA.species.disc[,-1]>0]<-1
+PCA.species.disc[PCA.species.disc[]<0]<-0
+PCA.species.disc$PCA.naive<-apply(PCA.species.disc[,-1],1,sum)
 
-# 4. Combine Ensemble models (river networks) and "PCA.speces.df" together for visualisation.
+# 4. Combine Ensemble models (river networks) with "PCA.speces.disc" for visualisation.
 plot(sdm)
 names(sdm)
 head(sdm@data)
@@ -70,9 +72,9 @@ head(sdm@data)
 nrow(sdm)==nrow(PCA.species.disc)
 sdm@data<-cbind(sdm@data,PCA.species.disc)
 
-#writeLinesShape(sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species")
+writeLinesShape(sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species")
 
-# 5. Overall spatial distribution of PCA taking species distribution with naive mobility.
+# 5. Overall spatial distribution of PCA considering species distribution with naive mobility.
 PCA.naive<-unique(names(unlist(PCA.species.lst)))
 
 PCA.species.overall<-data.frame(SegNo=sdm$SEGMENTNO)
@@ -82,5 +84,6 @@ colnames(PCA.species.overall)[2]<-"PCA_Naive"
 sum(sdm$SEGMENTNO==PCA.species.overall$SegNo)  # "3538"
 
 names(sdm)
+head(sdm@data)
 sdm@data<-cbind(sdm@data,PCA.species.overall)
 writeLinesShape(sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species")
