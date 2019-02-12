@@ -10,10 +10,10 @@
 
 setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
 
-sw.threshold<-0.8  # threshold of surface water persistence 
+sw.threshold<-365  # threshold of surface water persistence 
 
-daily.sw.1911.2017.df[daily.sw.1911.2017.df>=sw.threshold]<-1
 daily.sw.1911.2017.df[daily.sw.1911.2017.df<sw.threshold]<-0
+daily.sw.1911.2017.df[daily.sw.1911.2017.df>=sw.threshold]<-1
 daily.sw.1911.2017.df$SegNo<-rownames(daily.sw.1911.2017.df)
 
 fp.threshold<-5
