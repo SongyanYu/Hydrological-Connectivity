@@ -73,17 +73,3 @@ nrow(sdm)==nrow(PCA.species.disc)
 sdm@data<-cbind(sdm@data,PCA.species.disc)
 
 writeLinesShape(sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species")
-
-# 5. Overall spatial distribution of PCA considering species distribution with naive mobility.
-PCA.naive<-unique(names(unlist(PCA.species.lst)))
-
-PCA.species.overall<-data.frame(SegNo=sdm$SEGMENTNO)
-PCA.species.overall[match(PCA.naive,PCA.species.overall$SegNo),2]<-1
-colnames(PCA.species.overall)[2]<-"PCA_Naive"
-
-sum(sdm$SEGMENTNO==PCA.species.overall$SegNo)  # "3538"
-
-names(sdm)
-head(sdm@data)
-sdm@data<-cbind(sdm@data,PCA.species.overall)
-writeLinesShape(sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species")
