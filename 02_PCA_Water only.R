@@ -55,7 +55,7 @@ PCA.freq$Freq[PCA.freq$Freq>=freq.threshold]<-1
 SEQ.networks@data<-left_join(SEQ.networks@data,PCA.freq,by=c("SegmentNo"="SegNo"))
 names(SEQ.networks)
 
-#writeLinesShape(SEQ.networks,fn="Data/Shapfile/Threshold of quant 0.5/PCA_Water only_sw08_fp05")
+writeLinesShape(SEQ.networks,fn="Data/Shapfile/Threshold of quant 0.5/PCA_Water only_sw08_fp05")
 
 # 3. Temporal dynamic of PCA
 total.length<-sum(SEQ.networks$RCHLEN)

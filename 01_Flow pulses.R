@@ -4,8 +4,8 @@
 # Crate date: 17/12/2018
 #---------------------------
 
-setwd("H:/My Drive/PhD at GU")
-#setwd("D:/New folder/Google Drive/PhD at GU")
+#setwd("H:/My Drive/PhD at GU")
+setwd("D:/New folder/Google Drive/PhD at GU")
 
 
 # Directly read in the annual flow pulse from 1911-2017
