@@ -56,7 +56,7 @@ species.name<-colnames(sdm.species)[-1]
 colnames(PCA.species.df)[-1]<-species.name
 PCA.species.df[is.na(PCA.species.df)]<-0
 
-# top 75% frequency of being a PCA of a species is selected as PCA2
+# top 25% frequency of being a PCA of a species is selected as PCA2
 PCA.species.disc<-PCA.species.df
 threshold.frequency<-apply(PCA.species.disc[,-1],2,FUN = function(x) quantile(x,probs = 0.75))
 PCA.species.disc<-data.frame(SegNo=PCA.species.disc$SegNo,t(apply(PCA.species.disc[,-1],1,function(x) x-threshold.frequency)))
