@@ -4,13 +4,13 @@
 # Date Create: 24/12/2018
 #---------------------------
 
-
 setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
 
 # 1.1 Species distribution modelled by Ross et al. 2016
 library(maptools)
 sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 names(sdm)
+head(sdm@data)
 sdm_old<-readShapeLines(fn="Data/Shapfile/Species distribution model/Ensemble_forecasts.shp")
 
 PCA<-readShapeLines(fn="Data/Shapfile/Threshold of quant 0.5/PCA_Water only_sw08_fp05.shp")
@@ -22,7 +22,11 @@ names(SEQ.Clip)
 hierarchy<-data.frame(site=SEQ.Clip$SegmentNo,nextds=SEQ.Clip$DWNID1)
 
 max.mobility<-50
-mobility.segment<-c()
+mobility.segment<-c()   # Potentially re-colonisable length (PRL) for each stream segment
+
+# Calculate PRL
+# Consider the dam effect on  fish passage (only downstream, never upstream)
+dam.segment<-c(859803,853302,856476,874709)
 
 for(m in 1:nrow(sdm)){
   SegNo=sdm$SEGMENTNO[m]
@@ -74,6 +78,22 @@ writeLinesShape(sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Speci
 Mobility_Up<-function(SegNo,max.mobility){
   upstream<-allupstream(hierarchy = hierarchy,catchname = SegNo)
   upstream.mobility<-upstream[SEQ.Clip$D2OUTLET[match(upstream,SEQ.Clip$SegmentNo)]-SEQ.Clip$D2OUTLET[match(SegNo,SEQ.Clip$SegmentNo)]<=max.mobility]
+  
+  if(sum(dam.segment %in% upstream.mobility)){
+    
+    if(sum(dam.segment %in% upstream.mobility)==1){
+      block.segment<-dam.segment[dam.segment %in% upstream.mobility]
+      upstream.block<-allupstream(hierarchy = hierarchy,catchname = block.segment)
+      upstream.mobility<-setdiff(upstream.mobility,upstream.block)  #"upstream.block"
+    }
+    
+    if(sum(dam.segment %in% upstream.mobility)>1){
+      block.segments<-dam.segment[dam.segment %in% upstream.mobility]
+      upstream.block<-unique(unlist(list_all_upstream(hierarchy = hierarchy,catchnames = block.segments)))
+      upstream.mobility<-setdiff(upstream.mobility,upstream.block)
+    }
+  }
+  
   mobility.up<-sum(PCA$RCHLEN[match(upstream.mobility,PCA$SegmentNo)],na.rm=TRUE)
   return(mobility.up)
 }
@@ -102,6 +122,17 @@ allupstream <- function(hierarchy, catchname) {
     allsc <- c(catchname, allsc)
     allsc
   } else cat(paste(catchname, "is not a site listed in the hierarchy table", "\n"))
+}
+
+list_all_upstream <- function(hierarchy, catchnames) {
+  
+  all.us.sites <- vector("list", length(catchnames))
+  
+  for (i in 1:length(catchnames)) {
+    us.sites <- allupstream(hierarchy, catchnames[i])
+    all.us.sites[[i]] <- us.sites
+  }
+  return(all.us.sites)
 }
 
 alldownstream <- function(hierarchy, catchname) {
