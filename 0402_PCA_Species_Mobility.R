@@ -105,9 +105,10 @@ for(i in 1:length(stream.mobility.lst)){
 #---------------------
 
 # prerequisite variables 
-# 1) PCA.species.df (running "02_PCA_Species_No mobility.R")
-PCA.species.df<-PCA.species.df[,c(1:13,16:17,19,22:25,27:30)]  # Only 23 species are selected.
-PCA.species.df<-PCA.species.df[,c(1:9,11,10,12:24)]   # Make sure the col order is consistent with other datasets.
+# 1) PCA.species.disc (running "02_PCA_Species_No mobility.R")
+PCA.species.disc<-PCA.species.disc[,c(1:13,16:17,19,22:25,27:30)]  # Only 23 species are selected.
+PCA.species.disc<-PCA.species.disc[,c(1:9,11,10,12:24)]   # Make sure the col order is consistent with other datasets.
+
 
 setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
 
@@ -122,14 +123,16 @@ hierarchy<-data.frame(site=SEQ.Clip$SegmentNo,nextds=SEQ.Clip$DWNID1)
 
 sp.mobility<-read.csv("Data/R data/Species mobility.csv")
 
+dam.segment<-c(859803,853302,856476,874709)  # consider the blocking effect of dams
+
 PCA.species.mobility.lst<-list()
-for(m in 2:ncol(PCA.species.df)){                # particular species
-  SegNo.species<-PCA.species.df$SegNo[PCA.species.df[,m]>0]      # m
+for(m in 2:ncol(PCA.species.disc)){                # particular species
+  SegNo.species<-PCA.species.disc$SegNo[PCA.species.disc[,m]>0]      # m
   max.mobility<-sp.mobility[(m-1),2]                             # m
   
   stream.mobility.lst<-list()
   reachable.stream.lst<-list()
-  for(n in 1:length(SegNo.species)){             # Particular PCA
+  for(n in 1:length(SegNo.species)){             # Particular PCA2
     SegNo<-SegNo.species[n]                                      # n
     
     # Upstream
@@ -222,6 +225,22 @@ for(x in 1:length(lst_1)){
 Ups_Mobility<-function(SegNo,max.mobility){
   upstream<-allupstream(hierarchy = hierarchy,catchname = SegNo)
   upstream.mobility<-upstream[SEQ.Clip$D2OUTLET[match(upstream,SEQ.Clip$SegmentNo)]-SEQ.Clip$D2OUTLET[match(SegNo,SEQ.Clip$SegmentNo)]<=max.mobility]
+  
+  if(sum(dam.segment %in% upstream.mobility)){
+    
+    if(sum(dam.segment %in% upstream.mobility)==1){
+      block.segment<-dam.segment[dam.segment %in% upstream.mobility]
+      upstream.block<-allupstream(hierarchy = hierarchy,catchname = block.segment)
+      upstream.mobility<-setdiff(upstream.mobility,upstream.block)
+    }
+    
+    if(sum(dam.segment %in% upstream.mobility)>1){
+      block.segments<-dam.segment[dam.segment %in% upstream.mobility]
+      upstream.block<-unique(unlist(list_all_upstream(hierarchy = hierarchy,catchnames = block.segments)))
+      upstream.mobility<-setdiff(upstream.mobility,upstream.block)
+    }
+  }
+  
   return(upstream.mobility)
 }
 
