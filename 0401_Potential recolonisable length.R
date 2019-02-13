@@ -21,7 +21,10 @@ plot(SEQ.Clip)
 names(SEQ.Clip)
 hierarchy<-data.frame(site=SEQ.Clip$SegmentNo,nextds=SEQ.Clip$DWNID1)
 
-max.mobility<-50
+#max.mobility<-10
+#max.mobility<-50
+max.mobility<-100
+
 mobility.segment<-c()   # Potentially re-colonisable length (PRL) for each stream segment
 
 # Calculate PRL
@@ -67,7 +70,9 @@ for(m in 1:nrow(sdm)){
 
 sum(sdm$SEGMENTNO==sdm_old$SEGMENTNO)==nrow(sdm)
 
+sdm$HydCon_10<-mobility.segment
 sdm$HydCon_50<-mobility.segment
+sdm$HydCon_100<-mobility.segment
 
 names(sdm)
 
@@ -84,7 +89,7 @@ Mobility_Up<-function(SegNo,max.mobility){
     if(sum(dam.segment %in% upstream.mobility)==1){
       block.segment<-dam.segment[dam.segment %in% upstream.mobility]
       upstream.block<-allupstream(hierarchy = hierarchy,catchname = block.segment)
-      upstream.mobility<-setdiff(upstream.mobility,upstream.block)  #"upstream.block"
+      upstream.mobility<-setdiff(upstream.mobility,upstream.block)
     }
     
     if(sum(dam.segment %in% upstream.mobility)>1){
