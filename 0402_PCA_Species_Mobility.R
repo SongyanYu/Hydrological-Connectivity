@@ -104,6 +104,10 @@ for(i in 1:length(stream.mobility.lst)){
 # OR, calculate it... then do the combination mentioned above
 #---------------------
 
+#------------------
+# Efficient method to calcualte PCAs for varying mobility
+#------------------
+
 # prerequisite variables 
 # 1) PCA.species.disc (running "02_PCA_Species_No mobility.R")
 PCA.species.disc<-PCA.species.disc[,c(1:13,16:17,19,22:25,27:30)]  # Only 23 species are selected.
@@ -123,8 +127,6 @@ hierarchy<-data.frame(site=SEQ.Clip$SegmentNo,nextds=SEQ.Clip$DWNID1)
 sp.mobility<-read.csv("Data/R data/Species mobility.csv")
 
 dam.segment<-c(859803,853302,856476,874709)  # consider the blocking effect of dams
-
-PCA.species.mobility.lst<-list()
 
 species.L<-sp.mobility$Abbrev[sp.mobility$Mobility==10]   # species in Low mobility group
 n.L<-match(species.L,colnames(PCA.species.disc))  
@@ -197,21 +199,36 @@ for(x in 1:9999){
   }
   routine.lst[[x]]<-routine
   n.PCAs[x]<-length(routine)
-  plot(table(n.PCAs))
+  #plot(table(n.PCAs))
   cat(x," out of ",9999,"\n")
 }
 
+# conservation target of 5 PCAs for each species
+selected.routine.lst<-list()
+m<-1
+for(j in 1:length(routine.lst)){
+  target.meet<-c()
+  for(i in 2:ncol(PCA.species.disc)){
+    target.meet[i-1]<-sum(PCA.species.disc$SegNo[PCA.species.disc[,i]>0] %in% routine.lst[[j]])
+  }
+  if(sum(target.meet>4)==23){
+    selected.routine.lst[[m]]<-routine.lst[[j]]
+    m<-m+1
+  }
+  cat(j, "out of 9999",'\n')
+}
+
+n.PCAs<-lengths(selected.routine.lst)
+
 # mobility = 10km
-total.PRL<-sapply(routine.lst[which(n.PCAs==min(n.PCAs))],FUN = function(x) sum(sdm$HydCon_10[match(x,sdm$SEGMENTNO)]))  
+total.PRL<-sapply(selected.routine.lst[which(n.PCAs==min(n.PCAs))],FUN = function(x) sum(sdm$HydCon_10[match(x,sdm$SEGMENTNO)]))  
 
 # PCA3s for species in Low mobility group
-PCA.species.L<-unlist(routine.lst[which(n.PCAs==min(n.PCAs))[match(max(total.PRL),total.PRL)]])
+PCA.species.L<-unlist(selected.routine.lst[which(n.PCAs==min(n.PCAs))[match(max(total.PRL),total.PRL)]])
 
 # whether the selected PCA3s can make all PCA2s for medium mobility species connected
-
 max.mobility<-50
 stream.mobility.M<-list()
-#reachable.stream.M<-list()
 
 for(n in 1:length(PCA.species.L)){             # Particular PCA2
   SegNo<-PCA.species.L[n]                                      # n
@@ -245,14 +262,10 @@ for(n in 1:length(PCA.species.L)){             # Particular PCA2
   
   stream.mobility<-c(upstream.mobility,mobility.down,downstream.mobility.1)
   stream.mobility.M[[n]]<-stream.mobility
-  #reachable.streams<-base::intersect(stream.mobility,PCA.species.L)
-  #reachable.stream.M[[n]]<-reachable.streams
   
   cat(n," out of ",length(PCA.species.L),"\n")
 }
 
-#length(unlist(stream.mobility.M))
-#length(unique(unlist(stream.mobility.M)))
 reachable.stream.M<-unique(unlist(stream.mobility.M))  # all stream segments that can be reached from PCA3.L if mobility is changed to be 50km.
 
 sum(SegNo.M %in% reachable.stream.M)==length(SegNo.M)   # if "TRUE", also check SegNo.H; if "FALSE", add missed segno.m to PCA.species.L
@@ -260,16 +273,38 @@ sum(SegNo.H %in% reachable.stream.M)==length(SegNo.H)   # GOOD!
 
 saveRDS(object = PCA.species.L,file = "Data/R data/PCA_Varing_Mobility_Efficient")
 
+#-------------------
+# non-efficient method (for comparison)
+#-------------------
+# prerequisite variables 
+# 1) PCA.species.disc (running "02_PCA_Species_No mobility.R")
+#PCA.species.disc<-PCA.species.disc[,c(1:13,16:17,19,22:25,27:30)]  # Only 23 species are selected.
+#PCA.species.disc<-PCA.species.disc[,c(1:9,11,10,12:24)]   # Make sure the col order is consistent with other datasets.
 
-# old method
+setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
+
+library(maptools)
+sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
+names(sdm)
+
+SEQ.Clip<-readShapePoly(fn="Data/Shapfile/SEQ_Clip.shp")
+plot(SEQ.Clip)
+names(SEQ.Clip)
+hierarchy<-data.frame(site=SEQ.Clip$SegmentNo,nextds=SEQ.Clip$DWNID1)
+
+sp.mobility<-read.csv("Data/R data/Species mobility.csv")
+
+dam.segment<-c(859803,853302,856476,874709)  # consider the blocking effect of dams
+PCA.species.mobility.lst<-list()
+
 for(m in 2:ncol(PCA.species.disc)){                # particular species
   SegNo.species<-PCA.species.disc$SegNo[PCA.species.disc[,m]>0]      # m
   max.mobility<-sp.mobility[(m-1),2]                             # m
   
   stream.mobility.lst<-list()
   reachable.stream.lst<-list()
-  for(n in 1:length(SegNo.L)){             # Particular PCA2
-    SegNo<-SegNo.L[n]                                      # n
+  for(n in 1:length(SegNo.species)){             # Particular PCA2
+    SegNo<-SegNo.species[n]                                      # n
     
     # Upstream
     upstream.mobility<-Ups_Mobility(SegNo = SegNo,max.mobility = max.mobility)
@@ -300,24 +335,24 @@ for(m in 2:ncol(PCA.species.disc)){                # particular species
     
     stream.mobility<-c(upstream.mobility,mobility.down,downstream.mobility.1)
     stream.mobility.lst[[n]]<-stream.mobility
-    reachable.streams<-base::intersect(stream.mobility,SegNo.L)
+    reachable.streams<-base::intersect(stream.mobility,SegNo.species)
     reachable.stream.lst[[n]]<-reachable.streams
     
-    cat(n," out of ",length(SegNo.L),"\n")
+    cat(n," out of ",length(SegNo.species),"\n")
   }
   
   n.PCAs<-c()
   routine.lst<-list()
   for(x in 1:9999){
-    remaining.seg<-SegNo.L
+    remaining.seg<-SegNo.species
     routine<-c()
     
     while(length(remaining.seg)>0){
-      n.lst<-match(remaining.seg[sample(1:length(remaining.seg),1)],SegNo.L)
+      n.lst<-match(remaining.seg[sample(1:length(remaining.seg),1)],SegNo.species)
       remaining.seg.next<-setdiff(remaining.seg,reachable.stream.lst[[n.lst]])
       
       if(length(remaining.seg)>length(remaining.seg.next)){
-        routine<-append(routine,SegNo.L[n.lst])
+        routine<-append(routine,SegNo.species[n.lst])
         remaining.seg<-remaining.seg.next
       }
     }
@@ -341,10 +376,11 @@ for(m in 2:ncol(PCA.species.disc)){                # particular species
   
 }
 
-#saveRDS(PCA.species.mobility.lst,file = "Data/R data/PCA_Species_Mobility_lst")
+# save
+saveRDS(PCA.species.mobility.lst,file = "Data/R data/PCA_Varying_Mobility_Nonefficient")
 
 #------------------ Check out the catchment of interest in ArcGIS------------------------
-SegNo.L[348]
+SegNo.species[348]
 
 lst_1<-stream.mobility.lst[[348]]
 lst_1<-reachable.stream.lst[[348]]
