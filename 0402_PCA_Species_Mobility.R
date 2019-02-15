@@ -1,5 +1,5 @@
 #-----------------------------
-# This script aims to identify PCAs by taking species distribution with mobility.
+# This script aims to identify PCAs by taking species distribution with mobility (efficient vs. non-efficient).
 # Essentially, it reduces the number of PCAs identified by naive mobility in the condition that all PCAs can be recolonised
 # by species with mobility when flow resumes.
 # Author: Songyan Yu
@@ -10,7 +10,8 @@
 # Just read in
 #---------------------
 setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
-PCA.species.mobility.lst<-readRDS(file = "Data/R data/PCA_Species_Mobility_lst")
+PCA.species.mobility.lst<-readRDS(file = "Data/R data/PCA_Varying_Mobility_Nonefficient")  # Non-efficient
+PCA.species.mobility.efficient<-readRDS(file="Data/R data/PCA_Varing_Mobility_Efficient")  # Efficient
 
 # Already read in...
 # Next, combine it with river network for visulisation
@@ -22,24 +23,28 @@ names(sdm)
 
 # For each species
 PCA.species.mobility.df<-data.frame(SegNo=sdm$SEGMENTNO)
-for(i in 1:length(PCA.species.mobility.lst)){
-  PCA.species.mobility.df[match(PCA.species.mobility.lst[[i]],PCA.species.mobility.df$SegNo),(i+1)]<-1
-}
+#for(i in 1:length(PCA.species.mobility.lst)){
+#  PCA.species.mobility.df[match(PCA.species.mobility.lst[[i]],PCA.species.mobility.df$SegNo),(i+1)]<-1
+#}
+#colnames(PCA.species.mobility.df)[-1]<-as.character(sp.mobility$Abbrev)
+#PCA.species.mobility.df[is.na(PCA.species.mobility.df)]<-0
 
-colnames(PCA.species.mobility.df)[-1]<-as.character(sp.mobility$Abbrev)
-PCA.species.mobility.df[is.na(PCA.species.mobility.df)]<-0
-
-# Overall spatial distribution of PCAs for all species
+# Non-efficient PCA3s
 overall.PCAs<-unique(unlist(PCA.species.mobility.lst))
-PCA.species.mobility.df[match(overall.PCAs,PCA.species.mobility.df$SegNo),25]<-1   # Check whether '25' is still correct.
-colnames(PCA.species.mobility.df)[25]<-"Overall_mob"
-PCA.species.mobility.df$Overall_mob[is.na(PCA.species.mobility.df$Overall_mob)]<-0
+PCA.species.mobility.df[match(overall.PCAs,PCA.species.mobility.df$SegNo),2]<-1   # Check whether '2' is still correct.
+colnames(PCA.species.mobility.df)[2]<-"PCA_NoEFI"
+PCA.species.mobility.df$PCA_NoEFI[is.na(PCA.species.mobility.df$PCA_NoEFI)]<-0
+
+# Efficient PCA3s
+PCA.species.mobility.df[match(PCA.species.mobility.efficient,PCA.species.mobility.df$SegNo),3]<-1
+colnames(PCA.species.mobility.df)[3]<-"PCA_EFI"
+PCA.species.mobility.df$PCA_EFI[is.na(PCA.species.mobility.df$PCA_EFI)]<-0
 
 # Write the results down
 #sdm@data<-sdm@data[,-c(220:243)]
-sdm@data<-cbind(sdm@data,PCA.species.mobility.df)
+sdm@data<-cbind(sdm@data,PCA.species.mobility.df[,c(2,3)])
 names(sdm)
-writeLinesShape(sdm,"Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
+#writeLinesShape(sdm,"Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 
 # Identify reachable PCAs for visulisation
 # Take the 1st fish species for example. "AmbAga"
@@ -271,7 +276,7 @@ reachable.stream.M<-unique(unlist(stream.mobility.M))  # all stream segments tha
 sum(SegNo.M %in% reachable.stream.M)==length(SegNo.M)   # if "TRUE", also check SegNo.H; if "FALSE", add missed segno.m to PCA.species.L
 sum(SegNo.H %in% reachable.stream.M)==length(SegNo.H)   # GOOD!
 
-saveRDS(object = PCA.species.L,file = "Data/R data/PCA_Varing_Mobility_Efficient")
+#saveRDS(object = PCA.species.L,file = "Data/R data/PCA_Varing_Mobility_Efficient")
 
 #-------------------
 # non-efficient method (for comparison)
@@ -377,7 +382,7 @@ for(m in 2:ncol(PCA.species.disc)){                # particular species
 }
 
 # save
-saveRDS(PCA.species.mobility.lst,file = "Data/R data/PCA_Varying_Mobility_Nonefficient")
+#saveRDS(PCA.species.mobility.lst,file = "Data/R data/PCA_Varying_Mobility_Nonefficient")
 
 #------------------ Check out the catchment of interest in ArcGIS------------------------
 SegNo.species[348]
