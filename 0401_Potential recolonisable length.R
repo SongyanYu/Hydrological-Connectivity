@@ -74,9 +74,9 @@ sdm$HydCon_10<-mobility.segment
 sdm$HydCon_50<-mobility.segment
 sdm$HydCon_100<-mobility.segment
 
-names(sdm)
+names(sdm@data)
 
-writeLinesShape(sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
+#writeLinesShape(sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 
 
 #--------------------------- Custermised functions-------------------------
