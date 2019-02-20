@@ -114,7 +114,7 @@ for(i in 1:length(stream.mobility.lst)){
 #------------------
 
 # prerequisite variables 
-# 1) PCA.species.disc (running "02_PCA_Species_No mobility.R")
+# 1) PCA.species.disc (running "03_PCA_Species_No mobility.R")
 PCA.species.disc<-PCA.species.disc[,c(1:13,16:17,19,22:25,27:30)]  # Only 23 species are selected.
 PCA.species.disc<-PCA.species.disc[,c(1:9,11,10,12:24)]   # Make sure the col order is consistent with other datasets.
 
@@ -224,6 +224,14 @@ for(j in 1:length(routine.lst)){
 }
 
 n.PCAs<-lengths(selected.routine.lst)
+plot(n.PCAs)
+saveRDS(object = selected.routine.lst,file = "Data/R data/PCA3_")
+
+# Selection frequency
+frequency.PCA2<-data.frame(table(unlist(selected.routine.lst)))
+colnames(frequency.PCA2)[1]<-"SegNo"
+frequency.PCA2$Per<-frequency.PCA2$Freq/length(selected.routine.lst)
+
 
 # mobility = 10km
 total.PRL<-sapply(selected.routine.lst[which(n.PCAs==min(n.PCAs))],FUN = function(x) sum(sdm$HydCon_10[match(x,sdm$SEGMENTNO)]))  
@@ -271,7 +279,7 @@ for(n in 1:length(PCA.species.L)){             # Particular PCA2
   cat(n," out of ",length(PCA.species.L),"\n")
 }
 
-reachable.stream.M<-unique(unlist(stream.mobility.M))  # all stream segments that can be reached from PCA3.L if mobility is changed to be 50km.
+reachable.stream.M<-unique(unlist(stream.mobility.M))  # all stream segments that can be reached from PCA3.L when mobility is changed to be 50km.
 
 sum(SegNo.M %in% reachable.stream.M)==length(SegNo.M)   # if "TRUE", also check SegNo.H; if "FALSE", add missed segno.m to PCA.species.L
 sum(SegNo.H %in% reachable.stream.M)==length(SegNo.H)   # GOOD!
