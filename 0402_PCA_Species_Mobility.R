@@ -23,11 +23,6 @@ names(sdm)
 
 # For each species
 PCA.species.mobility.df<-data.frame(SegNo=sdm$SEGMENTNO)
-#for(i in 1:length(PCA.species.mobility.lst)){
-#  PCA.species.mobility.df[match(PCA.species.mobility.lst[[i]],PCA.species.mobility.df$SegNo),(i+1)]<-1
-#}
-#colnames(PCA.species.mobility.df)[-1]<-as.character(sp.mobility$Abbrev)
-#PCA.species.mobility.df[is.na(PCA.species.mobility.df)]<-0
 
 # Non-efficient PCA3s
 overall.PCAs<-unique(unlist(PCA.species.mobility.lst))
@@ -145,65 +140,67 @@ SegNo.L<-PCA.species.disc$SegNo[rowSums(PCA.species.disc[,n.L])>0]  # PCA2 for s
 SegNo.M<-PCA.species.disc$SegNo[rowSums(PCA.species.disc[,n.M])>0]  # PCA2 for species in M group
 SegNo.H<-PCA.species.disc$SegNo[rowSums(PCA.species.disc[,n.H])>0]  # PCA2 for species in H group
 
-max.mobility=10  # starting from the Low mobility group
+low.mobility<-10  # starting from the Low mobility group
+medium.mobility<-50
+high.mobility<-100
 
-stream.mobility.lst<-list()
-reachable.stream.lst<-list()
-for(n in 1:length(SegNo.L)){             # Particular PCA2
-  SegNo<-SegNo.L[n]                                      # n
-  
-  # Upstream
-  upstream.mobility<-Ups_Mobility(SegNo = SegNo,max.mobility = max.mobility)
-  
-  # Downstream
-  downstream<-alldownstream(hierarchy = hierarchy,catchname = SegNo)
-  downstream.mobility.1<-downstream[SEQ.Clip$D2OUTLET[match(SegNo,SEQ.Clip$SegmentNo)]-SEQ.Clip$D2OUTLET[match(downstream,SEQ.Clip$SegmentNo)]<=max.mobility]
-  downstream.mobility.1<-downstream.mobility.1[!is.na(downstream.mobility.1)]  # remove NA from the vector
-  
-  mobility.down<-c()
-  for(i in 2:length(downstream.mobility.1)){
-    
-    other.branch<-setdiff(hierarchy$site[downstream.mobility.1[i]==hierarchy$nextds],downstream.mobility.1)   # begin with 2
-    max.mobility.temp<-max.mobility-(SEQ.Clip$D2OUTLET[match(SegNo,SEQ.Clip$SegmentNo)]-SEQ.Clip$D2OUTLET[match(downstream.mobility.1[i],SEQ.Clip$SegmentNo)])
-    
-    if(length(other.branch)==1){
-      mobility.up.down<-Ups_Mobility(SegNo = other.branch,max.mobility = max.mobility.temp)
-      mobility.down<-append(mobility.down,mobility.up.down)
-    }
-    
-    if(length(other.branch)>1){
-      for(j in 1:length(other.branch)){
-        mobility.up.down<-Ups_Mobility(SegNo = other.branch[j],max.mobility = max.mobility.temp)
-        mobility.down<-append(mobility.down,mobility.up.down)
-      }
-    }
-  }
-  
-  stream.mobility<-c(upstream.mobility,mobility.down,downstream.mobility.1)
-  stream.mobility.lst[[n]]<-stream.mobility
-  reachable.streams<-base::intersect(stream.mobility,SegNo.L)
-  reachable.stream.lst[[n]]<-reachable.streams
-  
-  cat(n," out of ",length(SegNo.L),"\n")
-}
+reachable.PCA.L<-all_reachable_PCAs(PCA=SegNo.L,mobility = low.mobility)
 
 n.PCAs<-c()
 routine.lst<-list()
-for(x in 1:9999){
+for(x in 1:){
+  # PCA.species.L
   remaining.seg<-SegNo.L
   routine<-c()
   
   while(length(remaining.seg)>0){
     n.lst<-match(remaining.seg[sample(1:length(remaining.seg),1)],SegNo.L)
-    remaining.seg.next<-setdiff(remaining.seg,reachable.stream.lst[[n.lst]])
+    remaining.seg.next<-setdiff(remaining.seg,reachable.PCA.L[[n.lst]])
     
     if(length(remaining.seg)>length(remaining.seg.next)){
       routine<-append(routine,SegNo.L[n.lst])
       remaining.seg<-remaining.seg.next
     }
   }
-  routine.lst[[x]]<-routine
-  n.PCAs[x]<-length(routine)
+  # whether PCA.species.L can make all PCA2s.M connected
+  stream.mobility.M<-all.reachable.streams(PCA = routine, mobility = medium.mobility)
+  reachable.stream.M<-unique(unlist(stream.mobility.M))  # all stream segments that can be reached from PCA3.L when mobility is changed to be 50km.
+  
+  if(sum(SegNo.M %in% reachable.stream.M)==length(SegNo.M)){
+    
+    stream.mobility.H<-all.reachable.streams(PCA = routine, mobility = high.mobility)
+    reachable.stream.H<-unique(unlist(stream.mobility.H))  # all stream segments that can be reached from PCA3.L when mobility is changed to be 50km.
+    
+    # whether PCA.species.L can make all PCA2s.H connected
+    if(sum(SegNo.H %in% reachable.stream.H)==length(SegNo.H)){
+      solution<-routine
+    }
+    
+    else{
+      extra.routine<-add_new_PCA(SegNo = SegNo.H,reachable.stream = reachable.stream.H,mobility = high.mobility)
+      solution<-c(routine,extra.routine)
+    }
+  }
+  
+  else{
+    extra.routine<-add_new_PCA(SegNo = SegNo.M,reachable.stream = reachable.stream.M, mobility = medium.mobility)
+    solution<-c(routine,extra.routine)
+    
+    stream.mobility.H<-all.reachable.streams(PCA = solution, mobility = high.mobility)
+    reachable.stream.H<-unique(unlist(stream.mobility.H))  # all stream segments that can be reached from PCA3.L when mobility is changed to be 50km.
+    
+    if(sum(SegNo.H %in% reachable.stream.H)==length(SegNo.H)){
+      solution<-solution
+    }
+    else{
+      extra.routine<-add_new_PCA(SegNo = SegNo.H,reachable.stream = reachable.stream.H,mobility = high.mobility)
+      solution<-c(solution,extra.routine)
+    }
+  }
+
+  routine.lst[[x]]<-solution
+  n.PCAs[x]<-length(solution)
+  
   #plot(table(n.PCAs))
   cat(x," out of ",9999,"\n")
 }
@@ -239,50 +236,7 @@ total.PRL<-sapply(selected.routine.lst[which(n.PCAs==min(n.PCAs))],FUN = functio
 # PCA3s for species in Low mobility group
 PCA.species.L<-unlist(selected.routine.lst[which(n.PCAs==min(n.PCAs))[match(max(total.PRL),total.PRL)]])
 
-# whether the selected PCA3s can make all PCA2s for medium mobility species connected
-max.mobility<-50
-stream.mobility.M<-list()
 
-for(n in 1:length(PCA.species.L)){             # Particular PCA2
-  SegNo<-PCA.species.L[n]                                      # n
-  
-  # Upstream
-  upstream.mobility<-Ups_Mobility(SegNo = SegNo,max.mobility = max.mobility)
-  
-  # Downstream
-  downstream<-alldownstream(hierarchy = hierarchy,catchname = SegNo)
-  downstream.mobility.1<-downstream[SEQ.Clip$D2OUTLET[match(SegNo,SEQ.Clip$SegmentNo)]-SEQ.Clip$D2OUTLET[match(downstream,SEQ.Clip$SegmentNo)]<=max.mobility]
-  downstream.mobility.1<-downstream.mobility.1[!is.na(downstream.mobility.1)]  # remove NA from the vector
-  
-  mobility.down<-c()
-  for(i in 2:length(downstream.mobility.1)){
-    
-    other.branch<-setdiff(hierarchy$site[downstream.mobility.1[i]==hierarchy$nextds],downstream.mobility.1)   # begin with 2
-    max.mobility.temp<-max.mobility-(SEQ.Clip$D2OUTLET[match(SegNo,SEQ.Clip$SegmentNo)]-SEQ.Clip$D2OUTLET[match(downstream.mobility.1[i],SEQ.Clip$SegmentNo)])
-    
-    if(length(other.branch)==1){
-      mobility.up.down<-Ups_Mobility(SegNo = other.branch,max.mobility = max.mobility.temp)
-      mobility.down<-append(mobility.down,mobility.up.down)
-    }
-    
-    if(length(other.branch)>1){
-      for(j in 1:length(other.branch)){
-        mobility.up.down<-Ups_Mobility(SegNo = other.branch[j],max.mobility = max.mobility.temp)
-        mobility.down<-append(mobility.down,mobility.up.down)
-      }
-    }
-  }
-  
-  stream.mobility<-c(upstream.mobility,mobility.down,downstream.mobility.1)
-  stream.mobility.M[[n]]<-stream.mobility
-  
-  cat(n," out of ",length(PCA.species.L),"\n")
-}
-
-reachable.stream.M<-unique(unlist(stream.mobility.M))  # all stream segments that can be reached from PCA3.L when mobility is changed to be 50km.
-
-sum(SegNo.M %in% reachable.stream.M)==length(SegNo.M)   # if "TRUE", also check SegNo.H; if "FALSE", add missed segno.m to PCA.species.L
-sum(SegNo.H %in% reachable.stream.M)==length(SegNo.H)   # GOOD!
 
 #saveRDS(object = PCA.species.L,file = "Data/R data/PCA_Varing_Mobility_Efficient")
 
@@ -483,5 +437,15 @@ alldownstream <- function(hierarchy, catchname) {
   } else cat(paste(catchname, "is not a site listed in the hierarchy table", "\n"))
 }
 
+list_all_upstream <- function(hierarchy, catchnames) {
+  
+  all.us.sites <- vector("list", length(catchnames))
+  
+  for (i in 1:length(catchnames)) {
+    us.sites <- allupstream(hierarchy, catchnames[i])
+    all.us.sites[[i]] <- us.sites
+  }
+  return(all.us.sites)
+}
 
 
