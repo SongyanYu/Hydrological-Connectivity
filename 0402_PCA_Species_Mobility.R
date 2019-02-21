@@ -146,9 +146,11 @@ high.mobility<-100
 
 reachable.PCA.L<-all_reachable_PCAs(PCA=SegNo.L,mobility = low.mobility)
 
+num<-0
+m<-1
 n.PCAs<-c()
 routine.lst<-list()
-for(x in 1:){
+for(x in 1:2000){
   # PCA.species.L
   remaining.seg<-SegNo.L
   routine<-c()
@@ -162,23 +164,37 @@ for(x in 1:){
       remaining.seg<-remaining.seg.next
     }
   }
+  
+  # whether the conservation target of 5 PCA for each species is met.
+  target.meet<-c()
+  for(i in 2:ncol(PCA.species.disc)){
+    target.meet[i-1]<-sum(PCA.species.disc$SegNo[PCA.species.disc[,i]>0] %in% routine)
+  }
+  
+  if(sum(target.meet>4)==23){
   # whether PCA.species.L can make all PCA2s.M connected
   stream.mobility.M<-all.reachable.streams(PCA = routine, mobility = medium.mobility)
   reachable.stream.M<-unique(unlist(stream.mobility.M))  # all stream segments that can be reached from PCA3.L when mobility is changed to be 50km.
   
   if(sum(SegNo.M %in% reachable.stream.M)==length(SegNo.M)){
     
-    stream.mobility.H<-all.reachable.streams(PCA = routine, mobility = high.mobility)
-    reachable.stream.H<-unique(unlist(stream.mobility.H))  # all stream segments that can be reached from PCA3.L when mobility is changed to be 50km.
-    
-    # whether PCA.species.L can make all PCA2s.H connected
-    if(sum(SegNo.H %in% reachable.stream.H)==length(SegNo.H)){
+    if(sum(SegNo.H %in% reachable.stream.M)==length(SegNo.M)){
       solution<-routine
+      num<-num+1
     }
-    
     else{
-      extra.routine<-add_new_PCA(SegNo = SegNo.H,reachable.stream = reachable.stream.H,mobility = high.mobility)
-      solution<-c(routine,extra.routine)
+      stream.mobility.H<-all.reachable.streams(PCA = routine, mobility = high.mobility)
+      reachable.stream.H<-unique(unlist(stream.mobility.H))  # all stream segments that can be reached from PCA3.L when mobility is changed to be 50km.
+      
+      # whether PCA.species.L can make all PCA2s.H connected
+      if(sum(SegNo.H %in% reachable.stream.H)==length(SegNo.H)){
+        solution<-routine
+        num<-num+1
+      }
+      else{
+        extra.routine<-add_new_PCA(SegNo = SegNo.H,reachable.stream = reachable.stream.H,mobility = high.mobility)
+        solution<-c(routine,extra.routine)
+      }
     }
   }
   
@@ -198,47 +214,62 @@ for(x in 1:){
     }
   }
 
-  routine.lst[[x]]<-solution
-  n.PCAs[x]<-length(solution)
+  routine.lst[[m]]<-solution
+  n.PCAs[m]<-length(solution)
+  m<-m+1
+  }
   
   #plot(table(n.PCAs))
-  cat(x," out of ",9999,"\n")
+  cat(x," out of ",900,"\n")
 }
+
+saveRDS(object = routine.lst,file = "Data/R data/2000_solutions")
+extra.solutions<-readRDS(file = "Data/R data/99_solutions")
+
+routine.lst<-append(routine.lst,extra.solutions)
 
 # conservation target of 5 PCAs for each species
-selected.routine.lst<-list()
-m<-1
-for(j in 1:length(routine.lst)){
-  target.meet<-c()
-  for(i in 2:ncol(PCA.species.disc)){
-    target.meet[i-1]<-sum(PCA.species.disc$SegNo[PCA.species.disc[,i]>0] %in% routine.lst[[j]])
-  }
-  if(sum(target.meet>4)==23){
-    selected.routine.lst[[m]]<-routine.lst[[j]]
-    m<-m+1
-  }
-  cat(j, "out of 9999",'\n')
-}
+#selected.routine.lst<-list()
+#m<-1
+#for(j in 1:length(routine.lst)){
+#  target.meet<-c()
+#  for(i in 2:ncol(PCA.species.disc)){
+#    target.meet[i-1]<-sum(PCA.species.disc$SegNo[PCA.species.disc[,i]>0] %in% routine.lst[[j]])
+#  }
+#  if(sum(target.meet>4)==23){
+#    selected.routine.lst[[m]]<-routine.lst[[j]]
+#    m<-m+1
+#  }
+#  cat(j, "out of 9999",'\n')
+#}
 
-n.PCAs<-lengths(selected.routine.lst)
-plot(n.PCAs)
-saveRDS(object = selected.routine.lst,file = "Data/R data/PCA3_")
+#n.PCAs<-lengths(selected.routine.lst)
+#plot(n.PCAs)
+#saveRDS(object = selected.routine.lst,file = "Data/R data/PCA3_")
 
 # Selection frequency
-frequency.PCA2<-data.frame(table(unlist(selected.routine.lst)))
-colnames(frequency.PCA2)[1]<-"SegNo"
-frequency.PCA2$Per<-frequency.PCA2$Freq/length(selected.routine.lst)
 
+frequency.PCA2<-data.frame(table(unlist(routine.lst)))
+colnames(frequency.PCA2)[1]<-"SegNo"
+frequency.PCA2$Per<-frequency.PCA2$Freq/length(routine.lst)
+summary(frequency.PCA2$Per)
+plot(frequency.PCA2$Per)
 
 # mobility = 10km
-total.PRL<-sapply(selected.routine.lst[which(n.PCAs==min(n.PCAs))],FUN = function(x) sum(sdm$HydCon_10[match(x,sdm$SEGMENTNO)]))  
+total.PRL<-sapply(routine.lst[which(n.PCAs==min(n.PCAs))],FUN = function(x) sum(sdm$HydCon_10[match(x,sdm$SEGMENTNO)]))  
 
-# PCA3s for species in Low mobility group
-PCA.species.L<-unlist(selected.routine.lst[which(n.PCAs==min(n.PCAs))[match(max(total.PRL),total.PRL)]])
+# PCA3s for all species 
+PCA3.best<-unlist(routine.lst[which(n.PCAs==min(n.PCAs))[match(max(total.PRL),total.PRL)]])
+PCA3.best.df<-data.frame(SegNo=sdm$SegNo)
+PCA3.best.df$PCA3_best[PCA3.best.df$SegNo %in% PCA3.best]<-1
+PCA3.best.df$PCA3_best[!(PCA3.best.df$SegNo %in% PCA3.best)]<-0
 
-
-
-#saveRDS(object = PCA.species.L,file = "Data/R data/PCA_Varing_Mobility_Efficient")
+frequency.PCA2$SegNo<-as.numeric(as.character(frequency.PCA2$SegNo))
+sdm@data<-left_join(sdm@data,frequency.PCA2,by=("SegNo"))
+sdm@data<-cbind(sdm@data,PCA3.best.df$PCA3_best)
+names(sdm@data)[223]<-"PCA3_best"
+names(sdm@data)
+#writeLinesShape(x=sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 
 #-------------------
 # non-efficient method (for comparison)
