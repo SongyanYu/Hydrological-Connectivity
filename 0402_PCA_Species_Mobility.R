@@ -248,28 +248,34 @@ routine.lst<-append(routine.lst,extra.solutions)
 #saveRDS(object = selected.routine.lst,file = "Data/R data/PCA3_")
 
 # Selection frequency
-
 frequency.PCA2<-data.frame(table(unlist(routine.lst)))
 colnames(frequency.PCA2)[1]<-"SegNo"
 frequency.PCA2$Per<-frequency.PCA2$Freq/length(routine.lst)
+frequency.PCA2$class[frequency.PCA2$Per>=0.75]<-1
+frequency.PCA2$class[frequency.PCA2$Per>=0.5&frequency.PCA2$Per<0.75]<-2
+frequency.PCA2$class[frequency.PCA2$Per>=0.25&frequency.PCA2$Per<0.5]<-3
+frequency.PCA2$class[frequency.PCA2$Per<0.25]<-4
+
 summary(frequency.PCA2$Per)
 plot(frequency.PCA2$Per)
 
 # mobility = 10km
 total.PRL<-sapply(routine.lst[which(n.PCAs==min(n.PCAs))],FUN = function(x) sum(sdm$HydCon_10[match(x,sdm$SEGMENTNO)]))  
 
-# PCA3s for all species 
+# optimal PCA3s for all species 
 PCA3.best<-unlist(routine.lst[which(n.PCAs==min(n.PCAs))[match(max(total.PRL),total.PRL)]])
 PCA3.best.df<-data.frame(SegNo=sdm$SegNo)
 PCA3.best.df$PCA3_best[PCA3.best.df$SegNo %in% PCA3.best]<-1
 PCA3.best.df$PCA3_best[!(PCA3.best.df$SegNo %in% PCA3.best)]<-0
 
+# combinw with sdm
 frequency.PCA2$SegNo<-as.numeric(as.character(frequency.PCA2$SegNo))
 sdm@data<-left_join(sdm@data,frequency.PCA2,by=("SegNo"))
 sdm@data<-cbind(sdm@data,PCA3.best.df$PCA3_best)
-names(sdm@data)[223]<-"PCA3_best"
+names(sdm@data)[224]<-"PCA3_best"
 names(sdm@data)
-#writeLinesShape(x=sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
+
+writeLinesShape(x=sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 
 #-------------------
 # non-efficient method (for comparison)
