@@ -51,56 +51,81 @@ reachable.PCA.H<-all_reachable_PCAs(PCA=PCA1_SegNo,mobility = high.mobility)
 species.distribution.df<-species.distribution.df[rowSums(species.distribution.df[,-1])>0,]
 PCA1_SP_SegNo<-intersect(PCA1_SegNo,species.distribution.df$SegNo)
 
-cons.target<-5
+cons.target<-20
+PCA3.lst<-list()
 
-prot.species.df<-data.frame()
-remaining.seg<-PCA1_SP_SegNo
+for(i in 1:1000){
+  prot.species.df<-data.frame()
+  remaining.seg<-PCA1_SP_SegNo
+  
+  while(sum(colSums(prot.species.df[,-1])>(cons.target-1))<23){
+    
+    # randomly select a PCA1_SP_SegNo
+    n<-sample(1:length(remaining.seg),1)
+    
+    # check whether conservation target is met
+    prot.species<-species.distribution.df[match(remaining.seg[n],species.distribution.df$SegNo),]
+    prot.species.df<-rbind(prot.species.df,prot.species)
+    
+    #cat(sum(colSums(prot.species.df[,-1])>(cons.target-1)),"\n")
+    
+    # identify which species protection is still needed
+    deficit.species<-colnames(prot.species.df[,-1])[colSums(prot.species.df[,-1])<cons.target]
+    col.deficit<-match(deficit.species,colnames(species.distribution.df[,-1]))
+    
+    # update the selection pool by deleting the segNo that does not contribute species feature.
+    if(length(col.deficit)>1){
+      update.SP.SegNo<-species.distribution.df$SegNo[rowSums(species.distribution.df[,(col.deficit+1)]==1)>0]
+      reduce.SP.SegNo<-setdiff(species.distribution.df$SegNo,update.SP.SegNo)
+    }
+    if(length(col.deficit)==1){
+      update.SP.SegNo<-species.distribution.df$SegNo[species.distribution.df[,(col.deficit+1)]==1]
+      reduce.SP.SegNo<-setdiff(species.distribution.df$SegNo,update.SP.SegNo)
+    }
+    
+    # update the selection pool by deleting the reachable PCA1
+    species.selected<-colnames(species.distribution.df[,-1])[species.distribution.df[match(remaining.seg[n],species.distribution.df$SegNo),-1]==1]
+    least.mobility<-min(sp.mobility$Mobility[match(substr(species.selected,1,6),sp.mobility$Abbrev)])
+    if(least.mobility==low.mobility){
+      reduce.PCA1.SegNo<-reachable.PCA.L[match(remaining.seg[n],PCA1_SegNo)]
+    }
+    if(least.mobility==medium.mobility){
+      reduce.PCA1.SegNo<-reachable.PCA.M[match(remaining.seg[n],PCA1_SegNo)]
+    }
+    if(least.mobility==high.mobility){
+      reduce.PCA1.SegNo<-reachable.PCA.H[match(remaining.seg[n],PCA1_SegNo)]
+    }
+    
+    # update the selection pool formally
+    remaining.seg<-setdiff(remaining.seg,union(reduce.SP.SegNo,reduce.PCA1.SegNo))
+  }
+  
+  PCA3.lst[[i]]<-prot.species.df$SegNo
+  
+  cat(i,"\n")
 
-while(sum(colSums(prot.species.df[,-1])>4)<23){
-  
-  # randomly select a PCA1_SP_SegNo
-  n<-sample(1:length(remaining.seg),1)
-  
-  # check whether conservation target is met
-  prot.species<-species.distribution.df[match(remaining.seg[n],species.distribution.df$SegNo),]
-  prot.species.df<-rbind(prot.species.df,prot.species)
-  
-  cat(sum(colSums(prot.species.df[,-1])>4),"\n")
-  
-  # identify which species protection is still needed
-  deficit.species<-colnames(prot.species.df[,-1])[colSums(prot.species.df[,-1])<5]
-  col.deficit<-match(deficit.species,colnames(species.distribution.df[,-1]))
-  
-  # update the selection pool by deleting the segNo that does not contribute species feature.
-  if(length(col.deficit)>1){
-    update.SP.SegNo<-species.distribution.df$SegNo[rowSums(species.distribution.df[,(col.deficit+1)]==1)>0]
-    reduce.SP.SegNo<-setdiff(species.distribution.df$SegNo,update.SP.SegNo)
-  }
-  if(length(col.deficit)==1){
-    update.SP.SegNo<-species.distribution.df$SegNo[species.distribution.df[,(col.deficit+1)]==1]
-    reduce.SP.SegNo<-setdiff(species.distribution.df$SegNo,update.SP.SegNo)
-  }
-
-  # update the selection pool by deleting the reachable PCA1
-  species.selected<-colnames(species.distribution.df[,-1])[species.distribution.df[match(remaining.seg[n],species.distribution.df$SegNo),-1]==1]
-  least.mobility<-min(sp.mobility$Mobility[match(substr(species.selected,1,6),sp.mobility$Abbrev)])
-  if(least.mobility==low.mobility){
-    reduce.PCA1.SegNo<-reachable.PCA.L[match(remaining.seg[n],PCA1_SegNo)]
-  }
-  if(least.mobility==medium.mobility){
-    reduce.PCA1.SegNo<-reachable.PCA.M[match(remaining.seg[n],PCA1_SegNo)]
-  }
-  if(least.mobility==high.mobility){
-    reduce.PCA1.SegNo<-reachable.PCA.H[match(remaining.seg[n],PCA1_SegNo)]
-  }
-  
-  # update the selection pool formally
-  remaining.seg<-setdiff(remaining.seg,union(reduce.SP.SegNo,reduce.PCA1.SegNo))
 }
 
+# irreplacibility (selection frequency)
+frequency.PCA3<-data.frame(table(unlist(PCA3.lst)))
+colnames(frequency.PCA3)[1]<-"SegNo"
+frequency.PCA3$Per<-frequency.PCA3$Freq/length(PCA3.lst)
+frequency.PCA3$class[frequency.PCA3$Per>=0.75]<-1
+frequency.PCA3$class[frequency.PCA3$Per>=0.5&frequency.PCA3$Per<0.75]<-2
+frequency.PCA3$class[frequency.PCA3$Per>=0.25&frequency.PCA3$Per<0.5]<-3
+frequency.PCA3$class[frequency.PCA3$Per<0.25]<-4
+
+table(frequency.PCA3$class)
 
 
+# write the PCA3 best solution and irreplability into the shapfile
+PCA3<-prot.species.df$SegNo
+names(sdm)
 
-
+PCA3.tgth.df<-data.frame(SegNo=sdm$SegNo)
+PCA3.tgth.df$PCA3_tgth<-0
+PCA3.tgth.df$PCA3_tgth[match(PCA3,PCA3.tgth.df$SegNo)]<-1
+sdm@data$PCA3_tgth<-PCA3.tgth.df$PCA3_tgth
+writeLinesShape(sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 
 
