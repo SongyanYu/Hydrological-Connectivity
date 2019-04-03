@@ -12,14 +12,12 @@ setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
 library(maptools)
 sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 names(sdm)
-plot(sdm)
 
 SEQ.Clip<-readShapePoly(fn="Data/Shapfile/SEQ_Clip.shp")
-plot(SEQ.Clip)
 names(SEQ.Clip)
 hierarchy<-data.frame(site=SEQ.Clip$SegmentNo,nextds=SEQ.Clip$DWNID1)
 
-species.distribution.df<-sdm@data[,c(185:214)]
+species.distribution.df<-sdm@data[,c(186:215)] #check the col number
 species.distribution.df<-species.distribution.df[,-c(14,15,18,20,21,26)]  # delete 6 non-selecte species
 
 sp.mobility<-read.csv("Data/R data/Species mobility.csv")
@@ -42,6 +40,12 @@ high.mobility<-100
 
 dam.segment<-c(859803,853302,856476,874709)  # consider the blocking effect of dams
 
+# inundated SegNo
+innudt.shp<-readShapeLines("Data/Shapfile/Innudt_SegNo.shp")
+inundt.SegNo<-innudt.shp$SegmentNo
+delete.seg<-c(859398,859529,856156)
+inundt.SegNo<-inundt.SegNo[-match(delete.seg,inundt.SegNo)]
+
 PCA1_SegNo<-PCA.water.only$SegmentNo[PCA.water.only$Freq==1]
 reachable.PCA.L<-all_reachable_PCAs(PCA=PCA1_SegNo,mobility = low.mobility)
 reachable.PCA.M<-all_reachable_PCAs(PCA=PCA1_SegNo,mobility = medium.mobility)
@@ -51,7 +55,7 @@ reachable.PCA.H<-all_reachable_PCAs(PCA=PCA1_SegNo,mobility = high.mobility)
 species.distribution.df<-species.distribution.df[rowSums(species.distribution.df[,-1])>0,]
 PCA1_SP_SegNo<-intersect(PCA1_SegNo,species.distribution.df$SegNo)
 
-cons.target<-20
+cons.target<-5
 PCA3.lst<-list()
 
 for(i in 1:1000){
@@ -119,12 +123,20 @@ table(frequency.PCA3$class)
 
 
 # write the PCA3 best solution and irreplability into the shapfile
-PCA3<-prot.species.df$SegNo
+
+summary(lengths(PCA3.lst))
+n.best.PCA3<-which(lengths(PCA3.lst)==min(lengths(PCA3.lst)))
+
+best.PCA3<-PCA3.lst[[n.best.PCA3[1]]]
+
+temp<-frequency.PCA3$Per[match(best.PCA3,frequency.PCA3$SegNo)]
+
+
 names(sdm)
 
 PCA3.tgth.df<-data.frame(SegNo=sdm$SegNo)
 PCA3.tgth.df$PCA3_tgth<-0
-PCA3.tgth.df$PCA3_tgth[match(PCA3,PCA3.tgth.df$SegNo)]<-1
+PCA3.tgth.df$PCA3_tgth[match(best.PCA3,PCA3.tgth.df$SegNo)]<-1
 sdm@data$PCA3_tgth<-PCA3.tgth.df$PCA3_tgth
 writeLinesShape(sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 
