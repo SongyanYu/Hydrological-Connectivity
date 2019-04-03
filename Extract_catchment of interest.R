@@ -15,7 +15,7 @@ extract.ups<-function(shapfile,pour.seg){
   }
 }
 
-lst_1<-upstream.mobility
+lst_1<-PCA3
 for(i in 1:length(lst_1)){
-  cat("\"SegmentNo\"","=",lst_1[i],"OR",file = paste0("Ups-",pour.seg,".txt"),append = TRUE)
+  cat("\"SegmentNo\"","=",lst_1[i],"OR",file = paste0("Ups-",lst_1[1],".txt"),append = TRUE)
 }
