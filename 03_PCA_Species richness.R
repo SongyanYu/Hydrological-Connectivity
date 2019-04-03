@@ -39,7 +39,7 @@ SP.richness.df$class[SP.richness.df$SP.richness<17&SP.richness.df$SP.richness>=1
 
 # calculate # of refugia (PCA1) each species has
 n.PCA1.SP<-colSums(PCA1_SP_distribution[,-1])
-write.csv(n.PCA1.SP,file = "Anal/number of PCA1 per species.csv")
+#write.csv(n.PCA1.SP,file = "Anal/number of PCA1 per species.csv")
 
 # write the species richness down to river network for visulisation
 sdm@data$SP_richness<-0
@@ -47,5 +47,5 @@ sdm@data$SP_class<-5
 sdm$SP_richness[match(SP.richness.df$SegNo,sdm$SegNo)]<-SP.richness.df$SP.richness
 sdm$SP_class[match(SP.richness.df$SegNo,sdm$SegNo)]<-SP.richness.df$class
 head(sdm)
-writeLinesShape(sdm,fn="Data/Shapfile/SP richness/SP richness")
+# writeLinesShape(sdm,fn="Data/Shapfile/SP richness/SP richness")
 
