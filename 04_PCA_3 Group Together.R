@@ -60,6 +60,7 @@ scaling.factor<-c(0.05,0.1,0.15,0.2,0.25)
 
 frequency.PCA3.df<-data.frame(No=c(1:1108))  # 1108 is the number of PCA1 after excluding the inundated and non-dwelling segments.
 best.PCA3.lst<-list()
+lgt.PCA3.lst<-list()
 
 for(m in 1:length(scaling.factor)){
   cons.target<-floor(n.PCA1.SP*scaling.factor[m])
@@ -120,6 +121,8 @@ for(m in 1:length(scaling.factor)){
     
   }
   
+  lgt.PCA3.lst[[m]]<-lengths(PCA3.lst)
+  
   # irreplacibility (selection frequency)
   frequency.PCA3<-data.frame(table(unlist(PCA3.lst)))
   colnames(frequency.PCA3)[1]<-"SegNo"
@@ -155,12 +158,89 @@ for(m in 1:length(scaling.factor)){
 saveRDS(best.PCA3.lst,file="Data/R data/Best_PCA3 Mob")
 saveRDS(frequency.PCA3.df,file = "Data/R data/Frequency_PCA3 Mob")
 
-names(sdm)
+best.PCA3.lst<-readRDS(file="Data/R data/Best_PCA3 Mob")
+frequency.PCA3.df<-readRDS("Data/R data/Frequency_PCA3 Mob")
 
-PCA3.tgth.df<-data.frame(SegNo=sdm$SegNo)
-PCA3.tgth.df$PCA3_tgth<-0
-PCA3.tgth.df$PCA3_tgth[match(best.PCA3,PCA3.tgth.df$SegNo)]<-1
-sdm@data$PCA3_tgth<-PCA3.tgth.df$PCA3_tgth
-writeLinesShape(sdm,fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
+frequency.PCA3.df<-frequency.PCA3.df[,c(2,5,9,13,17,21)]
+colnames(frequency.PCA3.df)[2:6]<-c("Target_5%","Target_10%","Target_15%","Target_20%","Target_25%")
+
+names(sdm)
+sdm@data<-sdm@data[,-c(216:220)]
+
+library(dplyr)
+frequency.PCA3.df$SegNo<-as.numeric(as.character(frequency.PCA3.df$SegNo))
+sdm@data<-left_join(sdm@data,frequency.PCA3.df,by="SegNo")
+sdm@data[,216:220][is.na(sdm@data[,216:220])]<-5
+
+writeLinesShape(sdm,fn="Data/Shapfile/PCA3 non Mob/PCA3_non_Mob")
+
+
+
+
+#----------------FUNCTIONS---------------------
+allupstream <- function(hierarchy, catchname) {
+  
+  names(hierarchy) <- c("site", "nextds")
+  
+  if (length(which(hierarchy$site == catchname)) > 0) {
+    catchname <- as.vector(catchname)
+    allsc <- as.vector(hierarchy$site[hierarchy$nextds == catchname])
+    allsc <- allsc[!is.na(allsc)]
+    # subcatchments immediately upstream
+    nbrnch <- end <- length(allsc)
+    # number of branches immediately upstream
+    start <- 1
+    while (nbrnch > 0) {
+      for (i in start:end) {
+        allsc <- c(allsc, as.vector(hierarchy$site[hierarchy$nextds == allsc[i]]))
+        allsc <- allsc[!is.na(allsc)]
+      }
+      start <- end + 1
+      end <- length(allsc)
+      nbrnch <- end - (start - 1)
+    }
+    allsc <- c(catchname, allsc)
+    allsc
+  } else cat(paste(catchname, "is not a site listed in the hierarchy table", "\n"))
+}
+
+alldownstream <- function(hierarchy, catchname) {
+  
+  names(hierarchy) <- c("site", "nextds")
+  
+  if (length(which(hierarchy$site == catchname)) > 0) {
+    catchname <- as.vector(catchname)
+    allsc <- as.vector(hierarchy$nextds[hierarchy$site == catchname])
+    allsc <- allsc[!is.na(allsc)]
+    # subcatchments immediately upstream
+    nbrnch <- end <- length(allsc)
+    # number of branches immediately upstream
+    start <- 1
+    while (nbrnch > 0 & !-1 %in% allsc) {
+      for (j in start:end) {
+        allsc <- c(allsc, as.vector(hierarchy$nextds[hierarchy$site == allsc[j]]))
+        allsc <- allsc[!is.na(allsc)]
+      }
+      start <- end + 1
+      end <- length(allsc)
+      nbrnch <- end - (start - 1)
+    }
+    allsc <- c(catchname, allsc)
+    allsc <- allsc[allsc != -1]
+    allsc
+  } else cat(paste(catchname, "is not a site listed in the hierarchy table", "\n"))
+}
+
+list_all_upstream <- function(hierarchy, catchnames) {
+  
+  all.us.sites <- vector("list", length(catchnames))
+  
+  for (i in 1:length(catchnames)) {
+    us.sites <- allupstream(hierarchy, catchnames[i])
+    all.us.sites[[i]] <- us.sites
+  }
+  return(all.us.sites)
+}
+
 
 
