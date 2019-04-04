@@ -129,6 +129,7 @@ for(m in 1:length(scaling.factor)){
 
 saveRDS(best.PCA3.lst,file="Data/R data/Best_PCA3 non_Mob")
 saveRDS(frequency.PCA3.df,file = "Data/R data/Frequency_PCA3 non_Mob")
+saveRDS(lgt.PCA3.lst,file = "Data/R data/Lengths_PCA3_Solutions non Mob")
 
 frequency.PCA3.df<-frequency.PCA3.df[,c(2,5,9,13,17,21)]
 colnames(frequency.PCA3.df)[2:6]<-c("Target_5%","Target_10%","Target_15%","Target_20%","Target_25%")
