@@ -157,6 +157,7 @@ for(m in 1:length(scaling.factor)){
 
 saveRDS(best.PCA3.lst,file="Data/R data/Best_PCA3 Mob")
 saveRDS(frequency.PCA3.df,file = "Data/R data/Frequency_PCA3 Mob")
+saveRDS(lgt.PCA3.lst,file = "Data/R data/Lengths_PCA3_Solutions Mob")
 
 best.PCA3.lst<-readRDS(file="Data/R data/Best_PCA3 Mob")
 frequency.PCA3.df<-readRDS("Data/R data/Frequency_PCA3 Mob")
@@ -173,8 +174,6 @@ sdm@data<-left_join(sdm@data,frequency.PCA3.df,by="SegNo")
 sdm@data[,216:220][is.na(sdm@data[,216:220])]<-5
 
 writeLinesShape(sdm,fn="Data/Shapfile/PCA3 non Mob/PCA3_non_Mob")
-
-
 
 
 #----------------FUNCTIONS---------------------
