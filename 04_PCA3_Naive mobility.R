@@ -142,7 +142,7 @@ frequency.PCA3.df$SegNo<-as.numeric(as.character(frequency.PCA3.df$SegNo))
 sdm@data<-left_join(sdm@data,frequency.PCA3.df,by="SegNo")
 sdm@data[,216:220][is.na(sdm@data[,216:220])]<-5
 
-writeLinesShape(sdm,fn="Data/Shapfile/PCA3 Mob/PCA3_Mob")
+writeLinesShape(sdm,fn="Data/Shapfile/PCA3 non Mob/PCA3_non_Mob")
 
 
 #----------------FUNCTIONS---------------------

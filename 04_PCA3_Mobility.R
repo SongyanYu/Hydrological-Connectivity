@@ -166,15 +166,33 @@ frequency.PCA3.df<-frequency.PCA3.df[,c(2,5,9,13,17,21)]
 colnames(frequency.PCA3.df)[2:6]<-c("Target_5%","Target_10%","Target_15%","Target_20%","Target_25%")
 
 names(sdm)
-sdm@data<-sdm@data[,-c(216:220)]
+sdm@data<-sdm@data[,-c(216:227)]
 
 library(dplyr)
 frequency.PCA3.df$SegNo<-as.numeric(as.character(frequency.PCA3.df$SegNo))
 sdm@data<-left_join(sdm@data,frequency.PCA3.df,by="SegNo")
 sdm@data[,216:220][is.na(sdm@data[,216:220])]<-5
 
-writeLinesShape(sdm,fn="Data/Shapfile/PCA3 non Mob/PCA3_non_Mob")
+writeLinesShape(sdm,fn="Data/Shapfile/PCA3 Mob/PCA3_Mob")
 
+best.PCA3.df<-data.frame(SegNo=sdm$SegNo)
+best.PCA3.df$"Best_5%"<-0
+best.PCA3.df$`Best_5%`[match(best.PCA3.lst[[1]],best.PCA3.df$SegNo)]<-1
+best.PCA3.df$"Best_10%"<-0
+best.PCA3.df$`Best_10%`[match(best.PCA3.lst[[2]],best.PCA3.df$SegNo)]<-1
+best.PCA3.df$"Best_15%"<-0
+best.PCA3.df$`Best_15%`[match(best.PCA3.lst[[3]],best.PCA3.df$SegNo)]<-1
+best.PCA3.df$"Best_20%"<-0
+best.PCA3.df$`Best_20%`[match(best.PCA3.lst[[4]],best.PCA3.df$SegNo)]<-1
+best.PCA3.df$"Best_25%"<-0
+best.PCA3.df$`Best_25%`[match(best.PCA3.lst[[5]],best.PCA3.df$SegNo)]<-1
+
+sdm@data<-left_join(sdm@data,best.PCA3.df,by="SegNo")
+sdm@data$'Best_15%'<-best.PCA3.df$`Best_15%`
+names(sdm)
+head(sdm)
+writeLinesShape(sdm,fn="Data/Shapfile/PCA3 Mob/PCA3_Mob_Best")
+nrow(sdm@data)
 
 #----------------FUNCTIONS---------------------
 allupstream <- function(hierarchy, catchname) {
