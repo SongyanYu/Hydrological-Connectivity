@@ -145,6 +145,15 @@ sdm@data[,216:220][is.na(sdm@data[,216:220])]<-5
 writeLinesShape(sdm,fn="Data/Shapfile/PCA3 non Mob/PCA3_non_Mob")
 
 
+best.PCA3.df<-data.frame(SegNo=sdm$SEGMENTNO)
+best.PCA3.df$"Best_15%"<-0
+best.PCA3.df$`Best_15%`[match(best.PCA3.lst[[3]],best.PCA3.df$SegNo)]<-1
+
+sdm@data$'Best_15%'<-best.PCA3.df$`Best_15%`
+writeLinesShape(sdm,fn="Data/Shapfile/PCA3 non Mob/PCA3_non_Mob_Best")
+
+
+
 #----------------FUNCTIONS---------------------
 allupstream <- function(hierarchy, catchname) {
   
