@@ -27,6 +27,7 @@ library(ggplot2)
 p<-ggplot(lgt.PCA3,aes(x=variable,y=value,fill=group))+geom_boxplot()
 p<-p+labs(x="Conservation target",y="# priority conservation areas \n identified systematiclly")
 p<-p+theme_classic()+theme(legend.title = element_blank(),legend.position = c(0.15,0.85))
+p<-p+scale_fill_manual(values = c("gray","white"))
 p+ggsave(filename = "Figures/03_Mobility/Boxplot_lgt_PCA3 solutions.png",width = 5.5,height = 5.5*0.6)
 
-axis.title = element_text(size=10)
+?scale_fill_manual
