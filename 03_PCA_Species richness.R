@@ -19,7 +19,7 @@ library(maptools)
 sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 names(sdm)
 species.distribution.df<-sdm@data[,c(186:215)] #check the col number
-species.distribution.df<-species.distribution.df[,-c(14,15,18,20,21,26)]  # delete 6 non-selecte species
+species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 non-selecte species
 
 # delete those segNo that have no speices dwelling.
 species.distribution.df<-species.distribution.df[rowSums(species.distribution.df[,-1])>0,]
