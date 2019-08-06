@@ -15,7 +15,14 @@ extract.ups<-function(shapfile,pour.seg){
   }
 }
 
-lst_1<-PCA3
+lst_1<-c(high.reachable.streams)
+
 for(i in 1:length(lst_1)){
   cat("\"SegmentNo\"","=",lst_1[i],"OR",file = paste0("Ups-",lst_1[1],".txt"),append = TRUE)
 }
+
+
+library(maptools)
+reachable<-readShapeLines("Data/Shapfile/PCA3_reachable.shp")
+names(reachable)
+low.reachable.streams<-reachable$SegNo[reachable$high_reach==1]
