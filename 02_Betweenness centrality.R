@@ -161,7 +161,7 @@ SegNo<-Brisbane.clip$SegmentNo
 #BC.bne<-betweenness.centrality(SegNo,hierarchy)
 BC.bne<-readRDS("Data/R data/Betweenness Centrality_BNE")
 
-top.percent<-0.95  # 1%
+top.percent<-0.95  # 5%
 
 priority.mar<-BC.mar$SegNo[BC.mar$BC>=quantile(BC.mar$BC,probs = top.percent)]
 priority.sth<-BC.sth$SegNo[BC.sth$BC>=quantile(BC.sth$BC,probs = top.percent)]
