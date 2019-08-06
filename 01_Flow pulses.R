@@ -21,6 +21,7 @@ flow.files<-list.files("Part 3 Surface water availability/ENV_Variables/CatRunof
 
 library(hydrostats)
 library(plyr)
+library(reshape)
 
 flow.pulse.list<-list()
 for(i in 1:length(flow.files)){
@@ -35,7 +36,7 @@ for(i in 1:length(flow.files)){
   temp.ts$SegNo<-gsub("X","",temp.melt$variable)
   
   #temp.ddply<-ddply(temp.ts,.(SegNo),function(x) high.spells(x,threshold = 0.01,plot = FALSE,ann.stats = FALSE))
-  temp.ddply<-ddply(temp.ts,.(SegNo),function(x) high.spells(x,quant = 0.7,plot = TRUE,ann.stats = FALSE))
+  temp.ddply<-ddply(temp.ts,.(SegNo),function(x) high.spells(x,quant = 0.5,plot = FALSE,ann.stats = FALSE))
   
   flow.pulse.list[[i]]<-temp.ddply$n.events
   
@@ -50,6 +51,30 @@ saveRDS(flow.pulse.1911.2017,file = "Part 4 Hydrologic connectivity/Data/R data/
 #--------------------- Calculation code end -----------------------
 
 # Combine the fp results with SEQ river network for visulisation
+
+# mean annual number of flow pulses
+head(flow.pulse.1911.2017)
+mean.fp.df<-data.frame(SegNo=flow.pulse.1911.2017$SegNo,mean.fp=rowMeans(flow.pulse.1911.2017[,-108]))
+
+library(maptools)
+SEQ.networks<-readShapeLines("Part 4 Hydrologic connectivity/Data/Shapfile/SEQ_networks.shp")
+plot(SEQ.networks)
+
+mean.fp.df$SegNo<-as.numeric(flow.pulse.1911.2017$SegNo)
+mean.fp.df$fp.class[mean.fp.df$mean.fp>10]<-1
+mean.fp.df$fp.class[mean.fp.df$mean.fp<=10&mean.fp.df$mean.fp>9]<-2
+mean.fp.df$fp.class[mean.fp.df$mean.fp<=9&mean.fp.df$mean.fp>8]<-3
+mean.fp.df$fp.class[mean.fp.df$mean.fp<=8&mean.fp.df$mean.fp>5]<-4
+mean.fp.df$fp.class[mean.fp.df$mean.fp<=5]<-5
+
+
+library(dplyr)
+SEQ.networks@data<-left_join(SEQ.networks@data,mean.fp.df,by=c("SegmentNo"="SegNo"))
+names(SEQ.networks)
+
+writeLinesShape(SEQ.networks,fn="Part 4 Hydrologic connectivity/Data/Shapfile/Annual mean FP 1911_2017")
+
+# use flow pulse to indicate potential hydro connectivity
 fp.threshold<-5
 
 colnames(flow.pulse.1911.2017)
