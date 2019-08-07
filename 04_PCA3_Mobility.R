@@ -22,9 +22,9 @@ SEQ.Clip<-readShapePoly(fn="Data/Shapfile/SEQ_Clip.shp")
 hierarchy<-data.frame(site=SEQ.Clip$SegmentNo,nextds=SEQ.Clip$DWNID1)
 sp.mobility<-read.csv("Data/R data/Species mobility.csv")
 
-low.mobility<-10
-medium.mobility<-20
-high.mobility<-30
+low.mobility<-5
+medium.mobility<-10
+high.mobility<-15
 
 PCA.water.only<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only_sw08_fp05")
 
@@ -50,7 +50,7 @@ PCA1_SP_SegNo<-setdiff(PCA1_SP_SegNo,inundt.SegNo)  # also exclude inundated Seg
 PCA1_SP_distribution<-species.distribution.df[match(PCA1_SP_SegNo,species.distribution.df$SegNo),]
 n.PCA1.SP<-colSums(PCA1_SP_distribution[,-1])
 
-scaling.factor<-c(0.15)  # used to set conservation target (% of species distribution).
+scaling.factor<-c(0.25)  # used to set conservation target (% of species distribution).
 cons.target<-floor(n.PCA1.SP*scaling.factor)
 
 para.a<-0.4   # position penalty weight
@@ -125,7 +125,7 @@ for(i in 1:1000){
   # 3) if improving (reducing), keep it in; if worsening (increasing), remove it.
   #------
   iteration.n<-0
-  while(iteration.n<=1000&sum(colSums(prot.species.df[,-1])>=cons.target)<23){
+  while(iteration.n<=1000&sum(colSums(prot.species.df[,-1])>=cons.target)<25){
     # 1) randomly select a new segment
     n<-sample(1:length(remaining.seg),1)
     
@@ -205,7 +205,10 @@ frequency.seg<-data.frame(table(unlist(solution.lst)))
 summary(frequency.seg$Freq/1000)
 summary(n.seg)
 
-
+saveRDS(solution.lst,file = "Data/R data/PCA3 solution tgt 15")
+saveRDS(rep.sp,file = "Data/R data/PCA3 SpRep tgt 15")
+saveRDS(obj.func,file = "Data/R data/PCA3 obj func tgt 15")
+saveRDS(n.seg,file = "Data/R data/PCA3 n seg tgt 15")
 
 # near-optimal solutions
 summary(objective.func)
