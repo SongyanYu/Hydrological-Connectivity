@@ -5,6 +5,7 @@
 #------------------------
 
 setwd("D:/New folder/Google Drive/PhD at GU")
+setwd("D:/My Drive/PhD at GU")
 
 #daily.sw.1911.2017<-readRDS("Part 3 Surface water availability/Data/Model extrapolation/wetCont-days_1911-2017")
 daily.sw.1911.2017<-readRDS("Part 3 Surface water availability/Data/Model extrapolation/wet50-days_1911-2017")
