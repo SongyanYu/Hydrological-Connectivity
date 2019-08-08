@@ -49,12 +49,14 @@ PCA1_SP_SegNo<-setdiff(PCA1_SP_SegNo,inundt.SegNo)  # also exclude inundated Seg
 # calculate # of refugia (PCA1) each species has (i.e. species distribution)
 PCA1_SP_distribution<-species.distribution.df[match(PCA1_SP_SegNo,species.distribution.df$SegNo),]
 n.PCA1.SP<-colSums(PCA1_SP_distribution[,-1])
+n.sp<-colSums(species.distribution.df[,-1])
 
 scaling.factor<-c(0.25)  # used to set conservation target (% of species distribution).
 cons.target<-floor(n.PCA1.SP*scaling.factor)
+cons.target<-floor(n.sp*scaling.factor)
 
 para.a<-0.4   # position penalty weight
-para.b<-0.5   # feature penalty weight
+para.b<-1   # feature penalty weight
 rep.sp<-c()
 n.seg<-c()
 solution.lst<-list()
