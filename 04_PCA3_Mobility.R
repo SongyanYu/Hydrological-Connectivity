@@ -27,6 +27,7 @@ medium.mobility<-10
 high.mobility<-15
 
 PCA.water.only<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only_sw08_fp05")
+names(PCA.water.only)
 
 dam.segment<-c(859803,853302,856476,874709)  # consider the blocking effect of dams
 
