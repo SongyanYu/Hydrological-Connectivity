@@ -74,25 +74,24 @@ SEQ.networks$Freq.35[SEQ.networks$Freq>=freq.threshold[3]]<-1
 names(SEQ.networks)
 writeLinesShape(SEQ.networks,fn="Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
 
-PCA.water.only<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only_sw08_fp05")  # top 25%
-names(PCA.water.only)
-PCA1_SegNo<-PCA.water.only$SegmentNo[PCA.water.only$Freq==1]
-
-
-# inundated SegNo
-innudt.shp<-readShapeLines("Data/Shapfile/Innudt_SegNo.shp")
-inundt.SegNo<-innudt.shp$SegmentNo
-delete.seg<-c(859398,859529,856156)
-inundt.SegNo<-inundt.SegNo[-match(delete.seg,inundt.SegNo)]
-
 # read in species distribution
 sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 #names(sdm)
 species.distribution.df<-sdm@data[,c(186:215)] #check the col number
 species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 non-selecte species
 
-# combine water only refuges with species distribution
+# intersect water-only refuges (top 15%, 25% and 35%) with species distribution 
+PCA1_SegNo<-SEQ.networks$SegmentNo[SEQ.networks$Freq.15==1]
+PCA1_SegNo<-SEQ.networks$SegmentNo[SEQ.networks$Freq.25==1]
+PCA1_SegNo<-SEQ.networks$SegmentNo[SEQ.networks$Freq.35==1]
+
 sp.PCA1<-species.distribution.df[na.omit(match(PCA1_SegNo,species.distribution.df$SegNo)),]
 
 # calcualte sp representation
 mean(colSums(sp.PCA1[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+
+# inundated SegNo
+innudt.shp<-readShapeLines("Data/Shapfile/Innudt_SegNo.shp")
+inundt.SegNo<-innudt.shp$SegmentNo
+delete.seg<-c(859398,859529,856156)
+inundt.SegNo<-inundt.SegNo[-match(delete.seg,inundt.SegNo)]
