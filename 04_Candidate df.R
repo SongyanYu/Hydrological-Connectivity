@@ -15,8 +15,10 @@ setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
 # water-only refuges
 #-------------
 library(maptools)
-temp<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water_only_sw08_fp05_strahler2.shp")
-candidate.refuges<-temp$SegmentNo[temp$Freq==1]  # water-only refuges
+temp<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only.shp")
+names(temp)
+summary(temp$Freq)
+candidate.refuges<-temp$SegmentNo[temp$Freq>=1]  # water-only refuges
 candidate.df<-data.frame(SegNo=candidate.refuges)
 
 #------------
@@ -46,6 +48,7 @@ BC.log$BC.nor<-(BC.log$BC-min(BC.log$BC))/(max(BC.log$BC)-min(BC.log$BC))
 BC.bne$BC.nor<-(BC.bne$BC-min(BC.bne$BC))/(max(BC.bne$BC)-min(BC.bne$BC))
 
 BC.SEQ<-rbind(BC.mar,BC.sth,BC.pin,BC.log,BC.bne)
+
 candidate.df<-left_join(candidate.df,BC.SEQ[,-2],by="SegNo")
 
 #----------------
@@ -65,8 +68,6 @@ BC.SEQ$top5[BC.SEQ$BC.nor<top5]<-0
 library(dplyr)
 temp@data<-left_join(temp@data,BC.SEQ,by=c("SegmentNo"="SegNo"))
 writeLinesShape(temp,fn = "Data/Shapfile/Betweenness centrality/SEQ_BC")
-
-
 
 
 
