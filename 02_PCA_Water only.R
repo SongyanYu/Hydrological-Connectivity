@@ -119,12 +119,11 @@ sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Speci
 species.distribution.df<-sdm@data[,c(186:215)] #check the col number
 species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 non-selecte species
 
-# intersect water-only refuges (top 15%, 25% and 35%) with species distribution 
+# calcualte sp representation: 25.5% (n=476), 38.0% (n=752) and 47.5% (n=935)
 freq.15.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq_class==1]  # top 15%
 freq.25.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq_class==2]  # top 25%
 freq.35.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq_class==3]  # top 35%
 
-# calcualte sp representation: 25.5%, 38.0% and 47.5%
 sp.15<-species.distribution.df[na.omit(match(freq.15.seg,species.distribution.df$SegNo)),]
 rep.15<-mean(colSums(sp.15[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
 
