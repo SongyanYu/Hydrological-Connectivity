@@ -177,7 +177,15 @@ BC.SEQ<-rbind(BC.mar,BC.sth,BC.pin,BC.log,BC.bne)
 library(maptools)
 SEQ.networks<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
 names(SEQ.networks)
+
+# inundated SegNo
+innudt.shp<-readShapeLines("Data/Shapfile/Innudt_SegNo.shp")
+inundt.SegNo<-innudt.shp$SegmentNo
+delete.seg<-c(859398,859529,856156)
+inundt.SegNo<-inundt.SegNo[-match(delete.seg,inundt.SegNo)]
+
 candidate.refuges<-SEQ.networks$SegmentNo[SEQ.networks$Freq>0]
+candidate.refuges<-setdiff(candidate.refuges,inundt.SegNo)
 candidate.BC<-data.frame(SegNo=candidate.refuges)
 
 library(dplyr)
@@ -214,6 +222,38 @@ SEQ.networks$BC_class[match(BC.35.seg,SEQ.networks$SegmentNo)]<-3
 sum(SEQ.networks$BC_class==3)
 
 names(SEQ.networks)
-writeLinesShape(SEQ.networks,fn="Data/Shapfile/Betweenness centrality/SEQ_BC")
+#writeLinesShape(SEQ.networks,fn="Data/Shapfile/Betweenness centrality/SEQ_BC")
+
+#---
+# species representation of positional refuges
+#---
+
+# read in positional refuges
+SEQ.bc<-readShapeLines("Data/Shapfile/Betweenness centrality/SEQ_BC")
+names(SEQ.bc)
+
+# read in species distribution
+sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
+#names(sdm)
+species.distribution.df<-sdm@data[,c(186:215)] #check the col number
+species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 non-selecte species
+
+# calculate species rep: 27.6% (n=415), 39.4% (n=693) and 48.9% (n=969)
+# the number of positional refuges should be the same as that of water-only refuges 
+BC.15.seg<-SEQ.bc$SegmentNo[SEQ.bc$BC_class==1]
+BC.25.seg<-SEQ.bc$SegmentNo[SEQ.bc$BC_class==2]
+BC.35.seg<-SEQ.bc$SegmentNo[SEQ.bc$BC_class==3]
+
+sp.15<-species.distribution.df[na.omit(match(BC.15.seg,species.distribution.df$SegNo)),]
+rep.15<-mean(colSums(sp.15[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+
+sp.25<-species.distribution.df[na.omit(match(BC.25.seg,species.distribution.df$SegNo)),]
+rep.25<-rep.15+mean(colSums(sp.25[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+
+sp.35<-species.distribution.df[na.omit(match(BC.35.seg,species.distribution.df$SegNo)),]
+rep.35<-rep.25+mean(colSums(sp.35[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+
+
+
 
 
