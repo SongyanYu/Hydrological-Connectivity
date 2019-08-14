@@ -104,27 +104,34 @@ names(SEQ.networks)
 #writeLinesShape(SEQ.networks,fn="Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
 
 #-----
-# when re-visit, start from here
+# when re-visit, start from here to calculate species representation.
 #----
 library(maptools)
 SEQ.networks<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
 names(SEQ.networks)
 
-
-
+#---
+# species representation of water-only refuges
+#---
 # read in species distribution
 sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 #names(sdm)
 species.distribution.df<-sdm@data[,c(186:215)] #check the col number
 species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 non-selecte species
 
-# intersect water-only refuges (top 15%, 25% and 50%) with species distribution 
-candidate.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq_15==1]  # top 15%
-candidate.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq_25==1]  # top 25%
-candidate.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq_50==1]  # top 50%
+# intersect water-only refuges (top 15%, 25% and 35%) with species distribution 
+freq.15.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq_class==1]  # top 15%
+freq.25.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq_class==2]  # top 25%
+freq.35.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq_class==3]  # top 35%
 
-sp.PCA1<-species.distribution.df[na.omit(match(candidate.seg,species.distribution.df$SegNo)),]
+# calcualte sp representation: 25.5%, 38.0% and 47.5%
+sp.15<-species.distribution.df[na.omit(match(freq.15.seg,species.distribution.df$SegNo)),]
+rep.15<-mean(colSums(sp.15[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
 
-# calcualte sp representation
-mean(colSums(sp.PCA1[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
-# sp.representation: 28%, 41% and 70%.
+sp.25<-species.distribution.df[na.omit(match(freq.25.seg,species.distribution.df$SegNo)),]
+rep.25<-rep.15+mean(colSums(sp.25[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+
+sp.35<-species.distribution.df[na.omit(match(freq.35.seg,species.distribution.df$SegNo)),]
+rep.35<-rep.25+mean(colSums(sp.35[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+
+
