@@ -137,35 +137,83 @@ betweenness.centrality.cl<-function(SegNo,hierarcy){
 # significantly reduce the computional time
 #---------------------
 
-SegNo<-Maroochy.clip$SegmentNo
+#SegNo<-Maroochy.clip$SegmentNo
 #BC.mar<-betweenness.centrality(SegNo = SegNo,hierarcy = hierarchy)
 #saveRDS(BC.mar,file = "BC.maroochy")
 BC.mar<-readRDS("Data/R data/BC.maroochy")
 
-SegNo<-Southcoast.clip$SegmentNo
+#SegNo<-Southcoast.clip$SegmentNo
 #BC.sth<-betweenness.centrality(SegNo,hierarchy)
 #saveRDS(BC.sth,file="BC.southcoast")
 BC.sth<-readRDS("Data/R data/BC.southcoast")
 
-SegNo<-Pine.clip$SegmentNo
+#SegNo<-Pine.clip$SegmentNo
 #BC.pin<-betweenness.centrality(SegNo,hierarchy)
 #saveRDS(BC.pin,file = "BC.pine")
 BC.pin<-readRDS("Data/R data/BC.pine")
 
-SegNo<-Logan.clip$SegmentNo
+#SegNo<-Logan.clip$SegmentNo
 #BC.log<-betweenness.centrality(SegNo,hierarchy)
 #saveRDS(BC.log,file = "BC.logan")
 BC.log<-readRDS("Data/R data/BC.logan")
 
-SegNo<-Brisbane.clip$SegmentNo
+#SegNo<-Brisbane.clip$SegmentNo
 #BC.bne<-betweenness.centrality(SegNo,hierarchy)
 BC.bne<-readRDS("Data/R data/Betweenness Centrality_BNE")
 
-top.percent<-0.95  # 5%
+# To make BC for stream segments from different river networks comparable,
+# BC values were normalised within each river network before they were compared.
+BC.mar$BC.nor<-(BC.mar$BC-min(BC.mar$BC))/(max(BC.mar$BC)-min(BC.mar$BC))
+BC.sth$BC.nor<-(BC.sth$BC-min(BC.sth$BC))/(max(BC.sth$BC)-min(BC.sth$BC))
+BC.pin$BC.nor<-(BC.pin$BC-min(BC.pin$BC))/(max(BC.pin$BC)-min(BC.pin$BC))
+BC.log$BC.nor<-(BC.log$BC-min(BC.log$BC))/(max(BC.log$BC)-min(BC.log$BC))
+BC.bne$BC.nor<-(BC.bne$BC-min(BC.bne$BC))/(max(BC.bne$BC)-min(BC.bne$BC))
 
-priority.mar<-BC.mar$SegNo[BC.mar$BC>=quantile(BC.mar$BC,probs = top.percent)]
-priority.sth<-BC.sth$SegNo[BC.sth$BC>=quantile(BC.sth$BC,probs = top.percent)]
-priority.pin<-BC.pin$SegNo[BC.pin$BC>=quantile(BC.pin$BC,probs = top.percent)]
-priority.log<-BC.log$SegNo[BC.log$BC>=quantile(BC.log$BC,probs = top.percent)]
-priority.bne<-BC.bne$SegNo[BC.bne$BC>=quantile(BC.bne$BC,probs = top.percent)]
+BC.SEQ<-rbind(BC.mar,BC.sth,BC.pin,BC.log,BC.bne)
+
+#-------------
+# plotting BC fdc
+#-------------
+library(maptools)
+SEQ.networks<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
+names(SEQ.networks)
+candidate.refuges<-SEQ.networks$SegmentNo[SEQ.networks$Freq>0]
+candidate.BC<-data.frame(SegNo=candidate.refuges)
+
+library(dplyr)
+candidate.BC<-left_join(candidate.BC,BC.SEQ,by="SegNo")
+sum(is.na(candidate.BC))  # should be "0"
+
+library(hydroTSM)
+width=17.47
+ratio=0.8
+ppi=30
+png(filename = "Figures/02_Betweenness/BC_fdc.png",width = width*ppi,height = width*ratio*ppi)
+fdc(candidate.BC$BC.nor,xlab = "Exceedance probability",ylab = "Normalised BC",
+    lQ.thr = NA,hQ.thr = NA,thr.shw=FALSE,
+    main=NULL,lwd = 3,pch = NA,cex.lab = 1.5)
+dev.off()
+
+#----
+# prioritise BC
+#----
+top<-c(0.85,0.75,0.65)  # top 15%, 25% and 35%
+BC.15<-quantile(candidate.BC$BC.nor,probs = top[1])
+BC.25<-quantile(candidate.BC$BC.nor,probs = top[2])
+BC.35<-quantile(candidate.BC$BC.nor,probs = top[3])
+
+BC.15.seg<-candidate.BC$SegNo[candidate.BC$BC.nor>=BC.15]
+BC.25.seg<-candidate.BC$SegNo[candidate.BC$BC.nor>=BC.25&candidate.BC$BC.nor<BC.15]
+BC.35.seg<-candidate.BC$SegNo[candidate.BC$BC.nor>=BC.35&candidate.BC$BC.nor<BC.25]
+BC.rest<-candidate.BC$SegNo[candidate.BC$BC.nor<BC.35]
+
+SEQ.networks$BC_class<-4
+SEQ.networks$BC_class[match(BC.15.seg,SEQ.networks$SegmentNo)]<-1
+SEQ.networks$BC_class[match(BC.25.seg,SEQ.networks$SegmentNo)]<-2
+SEQ.networks$BC_class[match(BC.35.seg,SEQ.networks$SegmentNo)]<-3
+sum(SEQ.networks$BC_class==3)
+
+names(SEQ.networks)
+writeLinesShape(SEQ.networks,fn="Data/Shapfile/Betweenness centrality/SEQ_BC")
+
 
