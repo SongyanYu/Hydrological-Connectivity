@@ -13,7 +13,7 @@
 setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
 
 #----
-# when re-visit, skip the optimisation process and directly read in previous outcome.
+# when re-visit, skip the optimisation process and directly read in optimisation outcome.
 #---
 # read in species distribution data
 library(maptools)
@@ -24,37 +24,68 @@ species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 n
 n.sp<-colSums(species.distribution.df[,-1])
 
 # read in 100 potential solutions for each conservation target (15%, 25% and 35%).
-solution.lst<-readRDS("Data/R data/PCA3_solution_top15_non_Mob")
-solution.lst<-readRDS("Data/R data/PCA3_solution_top25_non_Mob")
-solution.lst<-readRDS("Data/R data/PCA3_solution_top35_non_Mob")
+solution.top15<-readRDS("Data/R data/PCA3_solution_top15_non_Mob")
+solution.top25<-readRDS("Data/R data/PCA3_solution_top25_non_Mob")
+solution.top35<-readRDS("Data/R data/PCA3_solution_top35_non_Mob")
 
-solution.lst<-readRDS("Data/R data/PCA3_solution_top15_Mob")
-solution.lst<-readRDS("Data/R data/PCA3_solution_top25_Mob")
-solution.lst<-readRDS("Data/R data/PCA3_solution_top35_Mob")
+#solution.lst<-readRDS("Data/R data/PCA3_solution_top15_Mob")
+#solution.lst<-readRDS("Data/R data/PCA3_solution_top25_Mob")
+#solution.lst<-readRDS("Data/R data/PCA3_solution_top35_Mob")
 
 # size of priority refuge network
-n.seg<-lengths(solution.lst)
-summary(n.seg)
+n.seg.top15<-lengths(solution.top15)
+n.seg.top25<-lengths(solution.top25)
+n.seg.top35<-lengths(solution.top35)
+
+summary(n.seg.top15)
+summary(n.seg.top25)
+summary(n.seg.top35)
 
 # species representation
 scaling.factor<-c(15,25,35)
-cons.target<-floor(n.sp*(scaling.factor[3]/100))  # change the index of the scaling.factor.
-rep.sp<-sapply(solution.lst,FUN = function(x){prot.species.df<-species.distribution.df[match(x,species.distribution.df$SegNo),]; rep.sp<-sum(colSums(prot.species.df[,-1])>=cons.target)})
-summary(rep.sp)
+
+cons.target.top15<-floor(n.sp*(scaling.factor[1]/100))  # change the index of the scaling.factor.
+cons.target.top25<-floor(n.sp*(scaling.factor[2]/100))
+cons.target.top35<-floor(n.sp*(scaling.factor[3]/100))
+
+rep.sp.top15<-sapply(solution.top15,FUN = function(x){prot.species.df<-species.distribution.df[match(x,species.distribution.df$SegNo),]
+                                                      rep.sp<-sum(colSums(prot.species.df[,-1])>=cons.target.top15)})
+rep.sp.top25<-sapply(solution.top25,FUN = function(x){prot.species.df<-species.distribution.df[match(x,species.distribution.df$SegNo),]
+                                                      rep.sp<-sum(colSums(prot.species.df[,-1])>=cons.target.top25)})
+rep.sp.top35<-sapply(solution.top35,FUN = function(x){prot.species.df<-species.distribution.df[match(x,species.distribution.df$SegNo),]
+                                                      rep.sp<-sum(colSums(prot.species.df[,-1])>=cons.target.top35)})
+
+summary(rep.sp.top15)
+summary(rep.sp.top25)
+summary(rep.sp.top35)
 
 #---
 # selection frequency
 #---
-frequency.seg<-data.frame(table(unlist(solution.lst)))
-summary(frequency.seg$Freq/100)
+frequency.top15<-data.frame(table(unlist(solution.top15)))
+frequency.top25<-data.frame(table(unlist(solution.top25)))
+frequency.top35<-data.frame(table(unlist(solution.top35)))
+
+summary(frequency.top15$Freq/100)
+summary(frequency.top25$Freq/100)
+summary(frequency.top35$Freq/100)
 
 seq.network<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
 names(seq.network)
-seq.network$"selec_freq"<-0
-seq.network$"selec_freq"[match(frequency.seg$Var1,seq.network$SegmentNo)]<-frequency.seg$Freq
-names(seq.network)
 
-writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Selec freq_top35")
+seq.network$"selec_freq"<-0
+seq.network$"selec_freq"[match(frequency.top15$Var1,seq.network$SegmentNo)]<-frequency.top15$Freq
+#writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Selec freq_top15")
+
+seq.network<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
+seq.network$"selec_freq"<-0
+seq.network$"selec_freq"[match(frequency.top25$Var1,seq.network$SegmentNo)]<-frequency.top25$Freq
+#writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Selec freq_top25")
+
+seq.network<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
+seq.network$"selec_freq"<-0
+seq.network$"selec_freq"[match(frequency.top35$Var1,seq.network$SegmentNo)]<-frequency.top35$Freq
+#writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Selec freq_top35")
 
 #---
 # best solution with the minimum objective function value
@@ -62,29 +93,95 @@ writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Selec freq_top35")
 para.a<-0.4   # position penalty weight
 para.b<-0.5  # feature penalty weight
 
-obj.func<-sapply(solution.lst,FUN = function(x){
+obj.func.top15<-sapply(solution.top15,FUN = function(x){
   prot.species.df<-species.distribution.df[match(x,species.distribution.df$SegNo),]
   RDI<-candidate.df$RDI[match(prot.species.df$SegNo,candidate.df$SegNo)]
   BC<-candidate.df$BC.nor[match(prot.species.df$SegNo,candidate.df$SegNo)]
-  feature<-cons.target-colSums(prot.species.df[,-1])
+  feature<-cons.target.top15-colSums(prot.species.df[,-1])
   feature<-sapply(feature,FUN = function(x) {ifelse(x<0,0,x)})
   objective.func<-sum(RDI)+sum(para.a*(1-BC))+sum(para.b*feature)
 })
-summary(obj.func)
+summary(obj.func.top15)
 
-best.solution<-solution.lst[[which(obj.func==min(obj.func))]]
-length(best.solution)
+obj.func.top25<-sapply(solution.top25,FUN = function(x){
+  prot.species.df<-species.distribution.df[match(x,species.distribution.df$SegNo),]
+  RDI<-candidate.df$RDI[match(prot.species.df$SegNo,candidate.df$SegNo)]
+  BC<-candidate.df$BC.nor[match(prot.species.df$SegNo,candidate.df$SegNo)]
+  feature<-cons.target.top25-colSums(prot.species.df[,-1])
+  feature<-sapply(feature,FUN = function(x) {ifelse(x<0,0,x)})
+  objective.func<-sum(RDI)+sum(para.a*(1-BC))+sum(para.b*feature)
+})
+summary(obj.func.top25)
+
+obj.func.top35<-sapply(solution.top35,FUN = function(x){
+  prot.species.df<-species.distribution.df[match(x,species.distribution.df$SegNo),]
+  RDI<-candidate.df$RDI[match(prot.species.df$SegNo,candidate.df$SegNo)]
+  BC<-candidate.df$BC.nor[match(prot.species.df$SegNo,candidate.df$SegNo)]
+  feature<-cons.target.top35-colSums(prot.species.df[,-1])
+  feature<-sapply(feature,FUN = function(x) {ifelse(x<0,0,x)})
+  objective.func<-sum(RDI)+sum(para.a*(1-BC))+sum(para.b*feature)
+})
+summary(obj.func.top35)
+
+best.solution.top15<-solution.top15[[which(obj.func.top15==min(obj.func.top15))]]
+best.solution.top25<-solution.top25[[which(obj.func.top25==min(obj.func.top25))]]
+best.solution.top35<-solution.top35[[which(obj.func.top35==min(obj.func.top35))]]
+
 seq.network<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
 names(seq.network)
 
-seq.network$"best_top35"<-0
-seq.network$"best_top35"[match(best.solution,seq.network$SegmentNo)]<-1
+seq.network$"best_top15"<-0
+seq.network$"best_top15"[match(best.solution.top15,seq.network$SegmentNo)]<-1
 
-writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Best solution")
+seq.network$"best_top25"<-0
+seq.network$"best_top25"[match(best.solution.top25,seq.network$SegmentNo)]<-1
+
+seq.network$"best_top35"<-0
+seq.network$"best_top35"[match(best.solution.top35,seq.network$SegmentNo)]<-1
+
+#writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Best solution")
+
+# identify reachable streams from best solution
+low.reachable.streams.lst<-all.reachable.streams(best.slt,mobility = 5)
+medium.reachable.streams.lst<-all.reachable.streams(best.slt,mobility = 10)
+high.reachable.streams.lst<-all.reachable.streams(best.slt,mobility = 15)
+
+low.reachable.streams<-unique(unlist(low.reachable.streams.lst))
+medium.reachable.streams<-unique(unlist(medium.reachable.streams.lst))
+high.reachable.streams<-unique(unlist(high.reachable.streams.lst))
+
+sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
+names(sdm)
+sdm@data<-sdm@data[,-c(216:227)]
+
+sdm@data$low.reachable[match(low.reachable.streams,sdm$SegNo)]<-1
+sdm@data$low.reachable[is.na(sdm$low.reachable)]<-0
+
+sdm@data$med.reachable[match(medium.reachable.streams,sdm$SegNo)]<-1
+sdm$med.reachable[is.na(sdm$med.reachable)]<-0
+
+sdm@data$high.reachable[match(high.reachable.streams,sdm$SegNo)]<-1
+sdm$high.reachable[is.na(sdm$high.reachable)]<-0
+
+writeLinesShape(sdm,fn="Data/Shapfile/PCA3_reachable")
+
 
 #---
 # species representation
 #---
+
+# sp representation of the best solution: 15.4%,26.2% and 35.9%.
+best.species.df<-species.distribution.df[match(best.solution,species.distribution.df$SegNo),]
+
+plot(colSums(best.species.df[,c(2:26)])/n.sp)
+mean(colSums(best.species.df[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+
+# sp rep for randomly selected segments in the same number as that systematically selected
+#random.seg<-PCA1_SegNo[runif(357,min = 1,max=length(PCA1_SegNo))]
+#plot(colSums(species.distribution.df[match(random.seg,species.distribution.df$SegNo),-1])/n.sp)
+
+
+#****************Optimisation process**************************
 
 library(maptools)
 sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
@@ -331,72 +428,6 @@ frequency.seg<-data.frame(table(unlist(solution.lst)))
 summary(frequency.seg$Freq/100)
 summary(n.seg)
 summary(rep.sp)
-
-
-
-
-# sp representation of the best solution
-plot(colSums(prot.species.df[,c(2:26)])/n.sp)
-mean(colSums(prot.species.df[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
-
-# sp rep for randomly selected segments in the same number as that systematically selected
-random.seg<-PCA1_SegNo[runif(357,min = 1,max=length(PCA1_SegNo))]
-plot(colSums(species.distribution.df[match(random.seg,species.distribution.df$SegNo),-1])/n.sp)
-
-
-
-# near-optimal solutions
-summary(objective.func)
-up.quant<-which(objective.func<=quantile(objective.func,probs = 0.25))
-frequency.PCA3<-data.frame(table(unlist(PCA3.lst[up.quant])))
-is.factor(frequency.PCA3$Var1)
-frequency.PCA3$Var1=as.numeric(as.character(frequency.PCA3$Var1))
-colnames(frequency.PCA3)<-c("SegNo","SlcFrq")
-
-frequency.PCA3$class[frequency.PCA3$SlcFrq<=15]<-4
-frequency.PCA3$class[frequency.PCA3$SlcFrq>15&frequency.PCA3$SlcFrq<=58]<-3
-frequency.PCA3$class[frequency.PCA3$SlcFrq>58&frequency.PCA3$SlcFrq<=150]<-2
-frequency.PCA3$class[frequency.PCA3$SlcFrq>150]<-1
-
-sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
-names(sdm)
-sdm@data<-sdm@data[,-c(216:227)]
-names(sdm)
-sdm@data<-left_join(sdm@data,frequency.PCA3,by=c("SegNo"))
-
-# the best solution
-best.slt<-unlist(PCA3.lst[objective.func==min(objective.func)])
-sdm$best.slt<-0
-sdm$best.slt[match(best.slt,sdm$SegNo)]<-1
-length(sdm$SegNo)
-
-writeLinesShape(sdm,fn="Data/Shapfile/PCA3_objective func")
-
-# identify reachable streams from best solution
-low.reachable.streams.lst<-all.reachable.streams(best.slt,mobility = 10)
-medium.reachable.streams.lst<-all.reachable.streams(best.slt,mobility = 50)
-high.reachable.streams.lst<-all.reachable.streams(best.slt,mobility = 100)
-
-low.reachable.streams<-unique(unlist(low.reachable.streams.lst))
-medium.reachable.streams<-unique(unlist(medium.reachable.streams.lst))
-high.reachable.streams<-unique(unlist(high.reachable.streams.lst))
-
-sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
-names(sdm)
-sdm@data<-sdm@data[,-c(216:227)]
-
-sdm@data$low.reachable[match(low.reachable.streams,sdm$SegNo)]<-1
-sdm@data$low.reachable[is.na(sdm$low.reachable)]<-0
-
-sdm@data$med.reachable[match(medium.reachable.streams,sdm$SegNo)]<-1
-sdm$med.reachable[is.na(sdm$med.reachable)]<-0
-
-sdm@data$high.reachable[match(high.reachable.streams,sdm$SegNo)]<-1
-sdm$high.reachable[is.na(sdm$high.reachable)]<-0
-
-writeLinesShape(sdm,fn="Data/Shapfile/PCA3_reachable")
-
-
 
 
 #----------------FUNCTIONS---------------------
