@@ -12,6 +12,73 @@
 
 setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
 
+#----
+# when re-visit, skip the optimisation process and directly read in previous outcome.
+#---
+# read in species distribution data
+library(maptools)
+sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
+names(sdm)
+species.distribution.df<-sdm@data[,c(186:215)] #check the col number
+species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 non-selecte species
+n.sp<-colSums(species.distribution.df[,-1])
+
+# read in 100 potential solutions for each conservation target (15%, 25% and 35%).
+solution.lst<-readRDS("Data/R data/PCA3_solution_top15_non_Mob")
+solution.lst<-readRDS("Data/R data/PCA3_solution_top25_non_Mob")
+solution.lst<-readRDS("Data/R data/PCA3_solution_top35_non_Mob")
+
+solution.lst<-readRDS("Data/R data/PCA3_solution_top15_Mob")
+solution.lst<-readRDS("Data/R data/PCA3_solution_top25_Mob")
+solution.lst<-readRDS("Data/R data/PCA3_solution_top35_Mob")
+
+# size of priority refuge network
+n.seg<-lengths(solution.lst)
+summary(n.seg)
+
+# species representation
+scaling.factor<-c(15,25,35)
+cons.target<-floor(n.sp*(scaling.factor[3]/100))  # change the index of the scaling.factor.
+rep.sp<-sapply(solution.lst,FUN = function(x){prot.species.df<-species.distribution.df[match(x,species.distribution.df$SegNo),]; rep.sp<-sum(colSums(prot.species.df[,-1])>=cons.target)})
+summary(rep.sp)
+
+#---
+# selection frequency
+#---
+frequency.seg<-data.frame(table(unlist(solution.lst)))
+summary(frequency.seg$Freq/100)
+
+seq.network<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
+names(seq.network)
+seq.network$"selec_freq"<-0
+seq.network$"selec_freq"[match(frequency.seg$Var1,seq.network$SegmentNo)]<-frequency.seg$Freq
+names(seq.network)
+
+writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Selec freq_top35")
+
+#---
+# best solution with the minimum objective function value
+#---
+
+para.a<-0.4   # position penalty weight
+para.b<-0.5  # feature penalty weight
+
+obj.func<-sapply(solution.lst,FUN = function(x){
+  prot.species.df<-species.distribution.df[match(x,species.distribution.df$SegNo),]
+  RDI<-candidate.df$RDI[match(prot.species.df$SegNo,candidate.df$SegNo)]
+  BC<-candidate.df$BC.nor[match(prot.species.df$SegNo,candidate.df$SegNo)]
+  feature<-cons.target-colSums(prot.species.df[,-1])
+  feature<-sapply(feature,FUN = function(x) {ifelse(x<0,0,x)})
+  objective.func<-sum(RDI)+sum(para.a*(1-BC))+sum(para.b*feature)
+})
+summary(obj.func)
+
+best.solution<-solution.lst[[which(obj.func==min(obj.func))]]
+length(best.solution)
+
+
+
+
 library(maptools)
 sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 names(sdm)
@@ -258,58 +325,6 @@ summary(frequency.seg$Freq/100)
 summary(n.seg)
 summary(rep.sp)
 
-#----
-# when re-visit, start from here
-#---
-
-# read in species distribution data
-library(maptools)
-sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
-names(sdm)
-species.distribution.df<-sdm@data[,c(186:215)] #check the col number
-species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 non-selecte species
-n.sp<-colSums(species.distribution.df[,-1])
-
-# read in 100 potential solutions for each conservation target (15%, 25% and 35%).
-solution.lst<-readRDS("Data/R data/PCA3_solution_top15_Mob")
-solution.lst<-readRDS("Data/R data/PCA3_solution_top25_Mob")
-solution.lst<-readRDS("Data/R data/PCA3_solution_top35_Mob")
-
-solution.lst<-readRDS("Data/R data/PCA3_solution_top15_non_Mob")
-solution.lst<-readRDS("Data/R data/PCA3_solution_top25_non_Mob")
-solution.lst<-readRDS("Data/R data/PCA3_solution_top35_non_Mob")
-
-# size of priority refuge network
-n.seg<-lengths(solution.lst)
-summary(n.seg)
-
-# species representation
-scaling.factor<-c(15,25,35)
-cons.target<-floor(n.sp*(scaling.factor[1]/100))  # change the index of the scaling.factor.
-rep.sp<-sapply(solution.lst,FUN = function(x){prot.species.df<-species.distribution.df[match(x,species.distribution.df$SegNo),]; rep.sp<-sum(colSums(prot.species.df[,-1])>=cons.target)})
-summary(rep.sp)
-
-# selection frequency
-frequency.seg<-data.frame(table(unlist(solution.lst)))
-summary(frequency.seg$Freq/100)
-
-# best solution with the minimum objective function value
-
-para.a<-0.4   # position penalty weight
-para.b<-0.5  # feature penalty weight
-
-obj.func<-sapply(solution.lst,FUN = function(x){
-  prot.species.df<-species.distribution.df[match(x,species.distribution.df$SegNo),]
-  RDI<-candidate.df$RDI[match(prot.species.df$SegNo,candidate.df$SegNo)]
-  BC<-candidate.df$BC.nor[match(prot.species.df$SegNo,candidate.df$SegNo)]
-  feature<-cons.target-colSums(prot.species.df[,-1])
-  feature<-sapply(feature,FUN = function(x) {ifelse(x<0,0,x)})
-  objective.func<-sum(RDI)+sum(para.a*(1-BC))+sum(para.b*feature)
-})
-summary(obj.func)
-
-best.solution<-solution.lst[[which(obj.func==min(obj.func))]]
-length(best.solution)
 
 
 
