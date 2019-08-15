@@ -59,7 +59,6 @@ writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Selec freq_top35")
 #---
 # best solution with the minimum objective function value
 #---
-
 para.a<-0.4   # position penalty weight
 para.b<-0.5  # feature penalty weight
 
@@ -75,9 +74,17 @@ summary(obj.func)
 
 best.solution<-solution.lst[[which(obj.func==min(obj.func))]]
 length(best.solution)
+seq.network<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
+names(seq.network)
 
+seq.network$"best_top35"<-0
+seq.network$"best_top35"[match(best.solution,seq.network$SegmentNo)]<-1
 
+writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Best solution")
 
+#---
+# species representation
+#---
 
 library(maptools)
 sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
