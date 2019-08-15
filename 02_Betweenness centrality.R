@@ -246,13 +246,15 @@ BC.35.seg<-SEQ.bc$SegmentNo[SEQ.bc$BC_class==3]
 
 sp.15<-species.distribution.df[na.omit(match(BC.15.seg,species.distribution.df$SegNo)),]
 rep.15<-mean(colSums(sp.15[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+plot(colSums(sp.15[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
 
-sp.25<-species.distribution.df[na.omit(match(BC.25.seg,species.distribution.df$SegNo)),]
-rep.25<-rep.15+mean(colSums(sp.25[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+sp.25<-species.distribution.df[na.omit(match(c(BC.25.seg,BC.15.seg),species.distribution.df$SegNo)),]
+rep.25<-mean(colSums(sp.25[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+plot(colSums(sp.25[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
 
-sp.35<-species.distribution.df[na.omit(match(BC.35.seg,species.distribution.df$SegNo)),]
-rep.35<-rep.25+mean(colSums(sp.35[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
-
+sp.35<-species.distribution.df[na.omit(match(c(BC.35.seg,BC.25.seg,BC.15.seg),species.distribution.df$SegNo)),]
+rep.35<-mean(colSums(sp.35[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+plot(colSums(sp.35[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
 
 
 
