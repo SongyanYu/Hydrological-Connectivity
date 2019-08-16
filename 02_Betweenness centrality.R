@@ -171,9 +171,9 @@ BC.bne$BC.nor<-(BC.bne$BC-min(BC.bne$BC))/(max(BC.bne$BC)-min(BC.bne$BC))
 
 BC.SEQ<-rbind(BC.mar,BC.sth,BC.pin,BC.log,BC.bne)
 
-#-------------
-# plotting BC fdc
-#-------------
+#---
+# candidate refuges
+#---
 library(maptools)
 SEQ.networks<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
 names(SEQ.networks)
@@ -192,6 +192,9 @@ library(dplyr)
 candidate.BC<-left_join(candidate.BC,BC.SEQ,by="SegNo")
 sum(is.na(candidate.BC))  # should be "0"
 
+#-------------
+# plotting BC fdc
+#-------------
 library(hydroTSM)
 width=17.47
 ratio=0.8
@@ -205,6 +208,7 @@ dev.off()
 #----
 # prioritise BC
 #----
+
 top<-c(0.85,0.75,0.65)  # top 15%, 25% and 35%
 BC.15<-quantile(candidate.BC$BC.nor,probs = top[1])
 BC.25<-quantile(candidate.BC$BC.nor,probs = top[2])
@@ -237,6 +241,7 @@ sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Speci
 #names(sdm)
 species.distribution.df<-sdm@data[,c(186:215)] #check the col number
 species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 non-selecte species
+n.sp<-colSums(species.distribution.df[,c(2:26)])
 
 # calculate species rep: 27.6% (n=415), 39.4% (n=693) and 48.9% (n=969)
 # the number of positional refuges should be the same as that of water-only refuges 
@@ -245,16 +250,30 @@ BC.25.seg<-SEQ.bc$SegmentNo[SEQ.bc$BC_class==2]
 BC.35.seg<-SEQ.bc$SegmentNo[SEQ.bc$BC_class==3]
 
 sp.15<-species.distribution.df[na.omit(match(BC.15.seg,species.distribution.df$SegNo)),]
-rep.15<-mean(colSums(sp.15[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
-plot(colSums(sp.15[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+rep.15<-colSums(sp.15[,c(2:26)])/n.sp
+rep.mean.15<-mean(colSums(sp.15[,c(2:26)])/n.sp)
+#plot(colSums(sp.15[,c(2:26)])/n.sp)
 
 sp.25<-species.distribution.df[na.omit(match(c(BC.25.seg,BC.15.seg),species.distribution.df$SegNo)),]
-rep.25<-mean(colSums(sp.25[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
-plot(colSums(sp.25[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+rep.25<-colSums(sp.25[,c(2:26)])/n.sp
+rep.mean.25<-mean(colSums(sp.25[,c(2:26)])/n.sp)
+plot(colSums(sp.25[,c(2:26)])/n.sp)
 
 sp.35<-species.distribution.df[na.omit(match(c(BC.35.seg,BC.25.seg,BC.15.seg),species.distribution.df$SegNo)),]
-rep.35<-mean(colSums(sp.35[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
-plot(colSums(sp.35[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+rep.35<-colSums(sp.35[,c(2:26)])/n.sp
+rep.mean.35<-mean(colSums(sp.35[,c(2:26)])/n.sp)
+plot(colSums(sp.35[,c(2:26)])/n.sp)
+
+#---
+# plot sp.rep
+#---
+bar.data<-data.frame(rest=1-rep.35,top35=rep.35-rep.25,top25=rep.25-rep.15,top15=rep.15)
+bar.data$sp<-substr(rownames(bar.data),1,6)
+
+library(reshape)
+bar.melt<-melt(bar.data,id="sp")
+library(ggplot2)
+ggplot()+geom_bar(data=bar.melt,aes(x=sp,y=value,fill=variable),stat = "identity")
 
 
 
