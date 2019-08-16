@@ -32,7 +32,9 @@ solution.top35<-readRDS("Data/R data/PCA3_solution_top35_non_Mob")
 #solution.lst<-readRDS("Data/R data/PCA3_solution_top25_Mob")
 #solution.lst<-readRDS("Data/R data/PCA3_solution_top35_Mob")
 
+#---
 # size of priority refuge network
+#---
 n.seg.top15<-lengths(solution.top15)
 n.seg.top25<-lengths(solution.top25)
 n.seg.top35<-lengths(solution.top35)
@@ -41,7 +43,9 @@ summary(n.seg.top15)
 summary(n.seg.top25)
 summary(n.seg.top35)
 
+#---
 # species representation
+#---
 scaling.factor<-c(15,25,35)
 
 cons.target.top15<-floor(n.sp*(scaling.factor[1]/100))  # change the index of the scaling.factor.
@@ -72,19 +76,30 @@ summary(frequency.top35$Freq/100)
 
 seq.network<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
 names(seq.network)
-
 seq.network$"selec_freq"<-0
 seq.network$"selec_freq"[match(frequency.top15$Var1,seq.network$SegmentNo)]<-frequency.top15$Freq
+seq.network$selec_class[seq.network$selec_freq<=25]<-1
+seq.network$selec_class[seq.network$selec_freq>25&seq.network$selec_freq<=50]<-2
+seq.network$selec_class[seq.network$selec_freq>50&seq.network$selec_freq<=75]<-3
+seq.network$selec_class[seq.network$selec_freq>75]<-4
 #writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Selec freq_top15")
 
 seq.network<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
 seq.network$"selec_freq"<-0
 seq.network$"selec_freq"[match(frequency.top25$Var1,seq.network$SegmentNo)]<-frequency.top25$Freq
+seq.network$selec_class[seq.network$selec_freq<=25]<-1
+seq.network$selec_class[seq.network$selec_freq>25&seq.network$selec_freq<=50]<-2
+seq.network$selec_class[seq.network$selec_freq>50&seq.network$selec_freq<=75]<-3
+seq.network$selec_class[seq.network$selec_freq>75]<-4
 #writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Selec freq_top25")
 
 seq.network<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
 seq.network$"selec_freq"<-0
 seq.network$"selec_freq"[match(frequency.top35$Var1,seq.network$SegmentNo)]<-frequency.top35$Freq
+seq.network$selec_class[seq.network$selec_freq<=25]<-1
+seq.network$selec_class[seq.network$selec_freq>25&seq.network$selec_freq<=50]<-2
+seq.network$selec_class[seq.network$selec_freq>50&seq.network$selec_freq<=75]<-3
+seq.network$selec_class[seq.network$selec_freq>75]<-4
 #writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Selec freq_top35")
 
 #---
@@ -228,10 +243,25 @@ for(i in 1:length(lst_1)){
 #---
 
 # sp representation of the best solution: 15.4%,26.2% and 35.9%.
-best.species.df<-species.distribution.df[match(best.solution,species.distribution.df$SegNo),]
+sp.top15<-species.distribution.df[match(best.solution.top15,species.distribution.df$SegNo),]
+sp.top25<-species.distribution.df[match(best.solution.top25,species.distribution.df$SegNo),]
+sp.top35<-species.distribution.df[match(best.solution.top35,species.distribution.df$SegNo),]
 
-plot(colSums(best.species.df[,c(2:26)])/n.sp)
-mean(colSums(best.species.df[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+sp.rep.top15<-colSums(sp.top15[,c(2:26)])/n.sp
+sp.rep.top25<-colSums(sp.top25[,c(2:26)])/n.sp
+sp.rep.top35<-colSums(sp.top35[,c(2:26)])/n.sp
+
+mean(colSums(sp.top15[,c(2:26)])/n.sp)
+mean(colSums(sp.top25[,c(2:26)])/n.sp)
+mean(colSums(sp.top35[,c(2:26)])/n.sp)
+
+library(ggplot2)
+bar.data<-data.frame(rest=1-sp.rep.top35,top35=sp.rep.top35-sp.rep.top25,top25=sp.rep.top25-sp.rep.top15,top15=sp.rep.top15)
+bar.data$sp<-substr(rownames(bar.data),1,6)
+library(reshape)
+bar.melt<-melt(bar.data,id="sp")
+
+ggplot()+geom_bar(data=bar.melt,aes(x=sp,y=value,fill=variable),stat = "identity")
 
 # sp rep for randomly selected segments in the same number as that systematically selected
 #random.seg<-PCA1_SegNo[runif(357,min = 1,max=length(PCA1_SegNo))]
