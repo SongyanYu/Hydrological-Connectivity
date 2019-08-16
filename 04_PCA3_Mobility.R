@@ -139,32 +139,89 @@ seq.network$"best_top25"[match(best.solution.top25,seq.network$SegmentNo)]<-1
 seq.network$"best_top35"<-0
 seq.network$"best_top35"[match(best.solution.top35,seq.network$SegmentNo)]<-1
 
+names(seq.network)
 #writeLinesShape(seq.network,fn="Data/Shapfile/PCA3 non Mob/Best solution")
 
 # identify reachable streams from best solution
-low.reachable.streams.lst<-all.reachable.streams(best.slt,mobility = 5)
-medium.reachable.streams.lst<-all.reachable.streams(best.slt,mobility = 10)
-high.reachable.streams.lst<-all.reachable.streams(best.slt,mobility = 15)
+SEQ.Clip<-readShapePoly(fn="Data/Shapfile/SEQ_Clip.shp")
+hierarchy<-data.frame(site=SEQ.Clip$SegmentNo,nextds=SEQ.Clip$DWNID1)
+sp.mobility<-read.csv("Data/R data/Species mobility.csv")
 
-low.reachable.streams<-unique(unlist(low.reachable.streams.lst))
-medium.reachable.streams<-unique(unlist(medium.reachable.streams.lst))
-high.reachable.streams<-unique(unlist(high.reachable.streams.lst))
+l.mob<-5
+m.mob<-10
+h.mob<-15
 
-sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
-names(sdm)
-sdm@data<-sdm@data[,-c(216:227)]
+dam.segment<-c(859803,853302,856476,874709)  # consider the blocking effect of dams
 
-sdm@data$low.reachable[match(low.reachable.streams,sdm$SegNo)]<-1
-sdm@data$low.reachable[is.na(sdm$low.reachable)]<-0
+low.reachable.streams.top15<-all.reachable.streams(best.solution.top15,mobility = l.mob)
+medium.reachable.streams.top15<-all.reachable.streams(best.solution.top15,mobility = m.mob)
+high.reachable.streams.top15<-all.reachable.streams(best.solution.top15,mobility = h.mob)
 
-sdm@data$med.reachable[match(medium.reachable.streams,sdm$SegNo)]<-1
-sdm$med.reachable[is.na(sdm$med.reachable)]<-0
+low.reachable.streams.top25<-all.reachable.streams(best.solution.top25,mobility = l.mob)
+medium.reachable.streams.top25<-all.reachable.streams(best.solution.top25,mobility = m.mob)
+high.reachable.streams.top25<-all.reachable.streams(best.solution.top25,mobility = h.mob)
 
-sdm@data$high.reachable[match(high.reachable.streams,sdm$SegNo)]<-1
-sdm$high.reachable[is.na(sdm$high.reachable)]<-0
+low.reachable.streams.top35<-all.reachable.streams(best.solution.top35,mobility = l.mob)
+medium.reachable.streams.top35<-all.reachable.streams(best.solution.top35,mobility = m.mob)
+high.reachable.streams.top35<-all.reachable.streams(best.solution.top35,mobility = h.mob)
 
-writeLinesShape(sdm,fn="Data/Shapfile/PCA3_reachable")
 
+low.reachable.streams.top15<-unique(unlist(low.reachable.streams.top15))
+medium.reachable.streams.top15<-unique(unlist(medium.reachable.streams.top15))
+high.reachable.streams.top15<-unique(unlist(high.reachable.streams.top15))
+
+low.reachable.streams.top25<-unique(unlist(low.reachable.streams.top25))
+medium.reachable.streams.top25<-unique(unlist(medium.reachable.streams.top25))
+high.reachable.streams.top25<-unique(unlist(high.reachable.streams.top25))
+
+low.reachable.streams.top35<-unique(unlist(low.reachable.streams.top35))
+medium.reachable.streams.top35<-unique(unlist(medium.reachable.streams.top35))
+high.reachable.streams.top35<-unique(unlist(high.reachable.streams.top35))
+
+lst_1<-c(low.reachable.streams.top15)
+for(i in 1:length(lst_1)){
+  cat("\"SegmentNo\"","=",lst_1[i],"OR",file = paste0("Ups-",lst_1[1],".txt"),append = TRUE)
+}
+
+lst_1<-c(medium.reachable.streams.top15)
+for(i in 1:length(lst_1)){
+  cat("\"SegmentNo\"","=",lst_1[i],"OR",file = paste0("Ups-",lst_1[1],".txt"),append = TRUE)
+}
+
+lst_1<-c(high.reachable.streams.top15)
+for(i in 1:length(lst_1)){
+  cat("\"SegmentNo\"","=",lst_1[i],"OR",file = paste0("Ups-",lst_1[1],".txt"),append = TRUE)
+}
+
+lst_1<-c(low.reachable.streams.top25)
+for(i in 1:length(lst_1)){
+  cat("\"SegmentNo\"","=",lst_1[i],"OR",file = paste0("Ups-",lst_1[1],".txt"),append = TRUE)
+}
+
+lst_1<-c(medium.reachable.streams.top25)
+for(i in 1:length(lst_1)){
+  cat("\"SegmentNo\"","=",lst_1[i],"OR",file = paste0("Ups-",lst_1[1],".txt"),append = TRUE)
+}
+
+lst_1<-c(high.reachable.streams.top25)
+for(i in 1:length(lst_1)){
+  cat("\"SegmentNo\"","=",lst_1[i],"OR",file = paste0("Ups-",lst_1[1],".txt"),append = TRUE)
+}
+
+lst_1<-c(low.reachable.streams.top35)
+for(i in 1:length(lst_1)){
+  cat("\"SegmentNo\"","=",lst_1[i],"OR",file = paste0("Ups-",lst_1[1],".txt"),append = TRUE)
+}
+
+lst_1<-c(medium.reachable.streams.top35)
+for(i in 1:length(lst_1)){
+  cat("\"SegmentNo\"","=",lst_1[i],"OR",file = paste0("Ups-",lst_1[1],".txt"),append = TRUE)
+}
+
+lst_1<-c(high.reachable.streams.top35)
+for(i in 1:length(lst_1)){
+  cat("\"SegmentNo\"","=",lst_1[i],"OR",file = paste0("Ups-",lst_1[1],".txt"),append = TRUE)
+}
 
 #---
 # species representation
@@ -201,7 +258,7 @@ n.sp<-colSums(species.distribution.df[,-1])
 candidate<-readShapeLines("Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
 names(candidate)
 
-#dam.segment<-c(859803,853302,856476,874709)  # consider the blocking effect of dams
+dam.segment<-c(859803,853302,856476,874709)  # consider the blocking effect of dams
 
 # inundated SegNo
 innudt.shp<-readShapeLines("Data/Shapfile/Innudt_SegNo.shp")
