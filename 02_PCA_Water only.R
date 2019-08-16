@@ -118,6 +118,7 @@ sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Speci
 #names(sdm)
 species.distribution.df<-sdm@data[,c(186:215)] #check the col number
 species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 non-selecte species
+n.sp<-colSums(species.distribution.df[,c(2:26)])
 
 # calcualte sp representation: 25.5% (n=476), 38.0% (n=752) and 47.5% (n=935)
 freq.15.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq_class==1]  # top 15%
@@ -125,12 +126,25 @@ freq.25.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq_class==2]  # top 25%
 freq.35.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq_class==3]  # top 35%
 
 sp.15<-species.distribution.df[na.omit(match(freq.15.seg,species.distribution.df$SegNo)),]
-rep.15<-mean(colSums(sp.15[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+rep.15<-colSums(sp.15[,c(2:26)])/n.sp
+rep.mean.15<-mean(colSums(sp.15[,c(2:26)])/n.sp)
 
-sp.25<-species.distribution.df[na.omit(match(freq.25.seg,species.distribution.df$SegNo)),]
-rep.25<-rep.15+mean(colSums(sp.25[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+sp.25<-species.distribution.df[na.omit(match(c(freq.15.seg,freq.25.seg),species.distribution.df$SegNo)),]
+rep.25<-colSums(sp.25[,c(2:26)])/n.sp
+rep.mean.25<-mean(colSums(sp.25[,c(2:26)])/n.sp)
 
-sp.35<-species.distribution.df[na.omit(match(freq.35.seg,species.distribution.df$SegNo)),]
-rep.35<-rep.25+mean(colSums(sp.35[,c(2:26)])/colSums(species.distribution.df[,c(2:26)]))
+sp.35<-species.distribution.df[na.omit(match(c(freq.15.seg,freq.25.seg,freq.35.seg),species.distribution.df$SegNo)),]
+rep.35<-colSums(sp.35[,c(2:26)])/n.sp
+rep.mean.35<-mean(colSums(sp.35[,c(2:26)])/n.sp)
 
+#---
+# ggplot sp.rep
+#---
+bar.data<-data.frame(rest=1-rep.35,top35=rep.35-rep.25,top25=rep.25-rep.15,top15=rep.15)
+bar.data$sp<-substr(rownames(bar.data),1,6)
+
+library(reshape)
+bar.melt<-melt(bar.data,id="sp")
+library(ggplot2)
+ggplot()+geom_bar(data=bar.melt,aes(x=sp,y=value,fill=variable),stat = "identity")
 
