@@ -242,7 +242,7 @@ for(i in 1:length(lst_1)){
 # species representation
 #---
 
-# sp representation of the best solution: 15.4%,26.2% and 35.9%.
+# sp representation of the best solution: 15.4% (n=321),26.2% (n=560) and 35.9% (n=801).
 sp.top15<-species.distribution.df[match(best.solution.top15,species.distribution.df$SegNo),]
 sp.top25<-species.distribution.df[match(best.solution.top25,species.distribution.df$SegNo),]
 sp.top35<-species.distribution.df[match(best.solution.top35,species.distribution.df$SegNo),]
@@ -258,6 +258,7 @@ mean(colSums(sp.top35[,c(2:26)])/n.sp)
 library(ggplot2)
 bar.data<-data.frame(rest=1-sp.rep.top35,top35=sp.rep.top35-sp.rep.top25,top25=sp.rep.top25-sp.rep.top15,top15=sp.rep.top15)
 bar.data$sp<-substr(rownames(bar.data),1,6)
+#saveRDS(bar.data,file = "Data/R data/Bar data_PCA3")
 library(reshape)
 bar.melt<-melt(bar.data,id="sp")
 
