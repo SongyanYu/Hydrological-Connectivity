@@ -257,18 +257,19 @@ rep.mean.15<-mean(colSums(sp.15[,c(2:26)])/n.sp)
 sp.25<-species.distribution.df[na.omit(match(c(BC.25.seg,BC.15.seg),species.distribution.df$SegNo)),]
 rep.25<-colSums(sp.25[,c(2:26)])/n.sp
 rep.mean.25<-mean(colSums(sp.25[,c(2:26)])/n.sp)
-plot(colSums(sp.25[,c(2:26)])/n.sp)
+#plot(colSums(sp.25[,c(2:26)])/n.sp)
 
 sp.35<-species.distribution.df[na.omit(match(c(BC.35.seg,BC.25.seg,BC.15.seg),species.distribution.df$SegNo)),]
 rep.35<-colSums(sp.35[,c(2:26)])/n.sp
 rep.mean.35<-mean(colSums(sp.35[,c(2:26)])/n.sp)
-plot(colSums(sp.35[,c(2:26)])/n.sp)
+#plot(colSums(sp.35[,c(2:26)])/n.sp)
 
 #---
 # plot sp.rep
 #---
 bar.data<-data.frame(rest=1-rep.35,top35=rep.35-rep.25,top25=rep.25-rep.15,top15=rep.15)
 bar.data$sp<-substr(rownames(bar.data),1,6)
+#saveRDS(bar.data,file = "Data/R data/Bar data_BC")
 
 library(reshape)
 bar.melt<-melt(bar.data,id="sp")
