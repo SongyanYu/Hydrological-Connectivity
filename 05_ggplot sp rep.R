@@ -136,36 +136,24 @@ sp.rep.mean.melt$sd<-sp.rep.sd.melt$value*100
 sp.rep.mean.melt$value<-sp.rep.mean.melt$value*100
 names(sp.rep.mean.melt)[1]<-"Method"
 
-p1<-ggplot(data = refuge.size.melt,aes(x=variable,y=value,group=method,color=method))+
+ggplot(data = refuge.size.melt,aes(x=variable,y=value,group=method,color=method))+
   geom_line()+
   geom_point(aes(shape=method,size=4))+theme_classic()+
   xlab("Threshold / Target")+ylab("Refuge network size (# stream segments)")+
   scale_x_discrete(labels=c("top15% / 15%", "top25% / 25%","top35% / 35%"))+
   guides(size=FALSE)+
-  labs(title=c("Priority refuge network size"))
-  #ggsave(filename = "Figures/03_Objective function/Overal representation of each method.png")
+  labs(title=c("Priority refuge network size"))+
+  theme(legend.position = "none")+
+  ggsave(filename = "Figures/03_Objective function/Overal representation of each method_1.png",width = 4,height = 4)
 
-p2<-ggplot(data = sp.rep.mean.melt,aes(x=variable,y=value,group=Method,color=Method))+
+ggplot(data = sp.rep.mean.melt,aes(x=variable,y=value,group=Method,color=Method))+
   geom_errorbar(aes(ymin=value-sd,ymax=value+sd),width=.1,position = position_dodge(0.05))+
   geom_line()+
   geom_point(aes(shape=Method,size=4))+theme_classic()+
   xlab("Threshold / Target")+ylab("Mean % of species total distribution")+
   labs(title=c("Mean species representation"))+guides(size=FALSE)+
-  scale_x_discrete(labels=c("top15% / 15%", "top25% / 25%","top35% / 35%"))
-
-install.packages("gtable")
-grid.arrange
-
-
-
-
-
-
-
-
-
-
-
+  scale_x_discrete(labels=c("top15% / 15%", "top25% / 25%","top35% / 35%"))+
+  ggsave(filename = "Figures/03_Objective function/Overal representation of each method_2.png",width = 4,height = 4)
 
 
 
