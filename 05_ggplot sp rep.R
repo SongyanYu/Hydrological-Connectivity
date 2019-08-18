@@ -112,13 +112,13 @@ sp.15<-species.distribution.df[match(best.solution.top15,species.distribution.df
 sp.25<-species.distribution.df[match(best.solution.top25,species.distribution.df$SegNo),]
 sp.35<-species.distribution.df[match(best.solution.top35,species.distribution.df$SegNo),]
 
-rep.15<-colSums(sp.top15[,c(2:26)])/n.sp
-rep.25<-colSums(sp.top25[,c(2:26)])/n.sp
-rep.35<-colSums(sp.top35[,c(2:26)])/n.sp
+rep.15<-colSums(sp.15[,c(2:26)])/n.sp
+rep.25<-colSums(sp.25[,c(2:26)])/n.sp
+rep.35<-colSums(sp.35[,c(2:26)])/n.sp
 
-rep.mean.15<-mean(colSums(sp.top15[,c(2:26)])/n.sp)
-rep.mean.25<-mean(colSums(sp.top25[,c(2:26)])/n.sp)
-rep.mean.35<-mean(colSums(sp.top35[,c(2:26)])/n.sp)
+rep.mean.15<-mean(colSums(sp.15[,c(2:26)])/n.sp)
+rep.mean.25<-mean(colSums(sp.25[,c(2:26)])/n.sp)
+rep.mean.35<-mean(colSums(sp.35[,c(2:26)])/n.sp)
 
 refuge.size.systematic<-data.frame(top15=nrow(sp.15),top25=nrow(sp.25),top35=nrow(sp.35),method="Systematic refuges")
 sp.rep.systematic<-data.frame(top15=rep.mean.15,sd15=sd(rep.15),top25=rep.mean.25,sd25=sd(rep.25),top35=rep.mean.35,sd35=sd(rep.35),method="Systematic refuges")
@@ -129,6 +129,7 @@ sp.rep.systematic<-data.frame(top15=rep.mean.15,sd15=sd(rep.15),top25=rep.mean.2
 refuge.size<-rbind(refuge.size.water.only,refuge.size.positional,refuge.size.systematic)
 sp.rep<-rbind(sp.rep.water.only,sp.rep.positional,sp.rep.systematic)
 
+library(reshape)
 refuge.size.melt<-melt(refuge.size,id="method")
 sp.rep.mean.melt<-melt(sp.rep[,c(1,3,5,7)],id=c("method"))
 sp.rep.sd.melt<-melt(sp.rep[,c(2,4,6,7)],id=c("method"))
@@ -136,10 +137,11 @@ sp.rep.mean.melt$sd<-sp.rep.sd.melt$value*100
 sp.rep.mean.melt$value<-sp.rep.mean.melt$value*100
 names(sp.rep.mean.melt)[1]<-"Method"
 
+library(ggplot2)
 ggplot(data = refuge.size.melt,aes(x=variable,y=value,group=method,color=method))+
   geom_line()+
   geom_point(aes(shape=method,size=4))+theme_classic()+
-  xlab("Threshold / Target")+ylab("Refuge network size (# stream segments)")+
+  xlab("Threshold / Target")+ylab("Number of stream segments")+
   scale_x_discrete(labels=c("top15% / 15%", "top25% / 25%","top35% / 35%"))+
   guides(size=FALSE)+
   labs(title=c("Priority refuge network size"))+
@@ -153,13 +155,4 @@ ggplot(data = sp.rep.mean.melt,aes(x=variable,y=value,group=Method,color=Method)
   xlab("Threshold / Target")+ylab("Mean % of species total distribution")+
   labs(title=c("Mean species representation"))+guides(size=FALSE)+
   scale_x_discrete(labels=c("top15% / 15%", "top25% / 25%","top35% / 35%"))+
-  ggsave(filename = "Figures/03_Objective function/Overal representation of each method_2.png",width = 4,height = 4)
-
-
-
-
-
-
-
-
-
+  ggsave(filename = "Figures/03_Objective function/Overal representation of each method_2.png",width = 6,height = 4)
