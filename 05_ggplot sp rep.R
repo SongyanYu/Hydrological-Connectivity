@@ -26,7 +26,7 @@ bar.melt$value<-bar.melt$value*100
 library(ggplot2)
 ggplot()+geom_bar(data=bar.melt,aes(x=sp,y=value,fill=variable),stat="identity")+
   facet_grid(method~ .)+theme_classic()+
-  scale_fill_grey(start = 1,end = 0.3,labels=c("","Top15% / 15%","Top25% / 25%","Top35% / 35%"))+
+  scale_fill_grey(start = 1,end = 0.3,labels=c("","Top35% / 35%","Top25% / 25%","Top15% / 15%"))+
   theme(axis.text.x = element_text(angle = 45,vjust = 1,hjust=1))+
   xlab("Fish species")+ylab("% of Total Species Distribution")+labs(fill=c("Threshold / Target"))+
   ggsave(filename = "Figures/03_Objective function/Cumulative representation of each method.png")
