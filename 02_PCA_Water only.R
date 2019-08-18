@@ -142,6 +142,7 @@ rep.mean.35<-mean(colSums(sp.35[,c(2:26)])/n.sp)
 #---
 bar.data<-data.frame(rest=1-rep.35,top35=rep.35-rep.25,top25=rep.25-rep.15,top15=rep.15)
 bar.data$sp<-substr(rownames(bar.data),1,6)
+#saveRDS(bar.data,file = "Data/R data/Bar data_water_only")
 
 library(reshape)
 bar.melt<-melt(bar.data,id="sp")
