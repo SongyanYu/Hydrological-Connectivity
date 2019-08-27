@@ -6,6 +6,7 @@
 #-------------
 
 setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
+#setwd("D:/My Drive/PhD at GU/Part 4 Hydrologic connectivity/")
 
 #---
 # 1. detailed species representaiton
@@ -67,7 +68,11 @@ sp.35<-species.distribution.df[na.omit(match(c(freq.15.seg,freq.25.seg,freq.35.s
 rep.35<-colSums(sp.35[,c(2:26)])/n.sp
 rep.mean.35<-mean(colSums(sp.35[,c(2:26)])/n.sp)
 
-refuge.size.water.only<-data.frame(top15=nrow(sp.15),top25=nrow(sp.25),top35=nrow(sp.35),method="Water-only refuges")
+length.sp.15<-sum(SEQ.networks$RCHLEN[match(sp.15$SegNo,SEQ.networks$SegmentNo)])
+length.sp.25<-sum(SEQ.networks$RCHLEN[match(sp.25$SegNo,SEQ.networks$SegmentNo)])
+length.sp.35<-sum(SEQ.networks$RCHLEN[match(sp.35$SegNo,SEQ.networks$SegmentNo)])
+
+refuge.size.water.only<-data.frame(top15=length.sp.15,top25=length.sp.25,top35=length.sp.35,method="Water-only refuges")
 sp.rep.water.only<-data.frame(top15=rep.mean.15,sd15=sd(rep.15),top25=rep.mean.25,sd25=sd(rep.25),top35=rep.mean.35,sd35=sd(rep.35),method="Water-only refuges")
 
 #---
@@ -94,7 +99,11 @@ sp.35<-species.distribution.df[na.omit(match(c(BC.35.seg,BC.25.seg,BC.15.seg),sp
 rep.35<-colSums(sp.35[,c(2:26)])/n.sp
 rep.mean.35<-mean(colSums(sp.35[,c(2:26)])/n.sp)
 
-refuge.size.positional<-data.frame(top15=nrow(sp.15),top25=nrow(sp.25),top35=nrow(sp.35),method="Positional refuges")
+length.sp.15<-sum(SEQ.networks$RCHLEN[match(sp.15$SegNo,SEQ.networks$SegmentNo)])
+length.sp.25<-sum(SEQ.networks$RCHLEN[match(sp.25$SegNo,SEQ.networks$SegmentNo)])
+length.sp.35<-sum(SEQ.networks$RCHLEN[match(sp.35$SegNo,SEQ.networks$SegmentNo)])
+
+refuge.size.positional<-data.frame(top15=length.sp.15,top25=length.sp.25,top35=length.sp.35,method="Positional refuges")
 sp.rep.positional<-data.frame(top15=rep.mean.15,sd15=sd(rep.15),top25=rep.mean.25,sd25=sd(rep.25),top35=rep.mean.35,sd35=sd(rep.35),method="Positional refuges")
 
 #---
@@ -112,6 +121,10 @@ sp.15<-species.distribution.df[match(best.solution.top15,species.distribution.df
 sp.25<-species.distribution.df[match(best.solution.top25,species.distribution.df$SegNo),]
 sp.35<-species.distribution.df[match(best.solution.top35,species.distribution.df$SegNo),]
 
+length.sp.15<-sum(SEQ.networks$RCHLEN[match(sp.15$SegNo,SEQ.networks$SegmentNo)])
+length.sp.25<-sum(SEQ.networks$RCHLEN[match(sp.25$SegNo,SEQ.networks$SegmentNo)])
+length.sp.35<-sum(SEQ.networks$RCHLEN[match(sp.35$SegNo,SEQ.networks$SegmentNo)])
+
 rep.15<-colSums(sp.15[,c(2:26)])/n.sp
 rep.25<-colSums(sp.25[,c(2:26)])/n.sp
 rep.35<-colSums(sp.35[,c(2:26)])/n.sp
@@ -120,7 +133,7 @@ rep.mean.15<-mean(colSums(sp.15[,c(2:26)])/n.sp)
 rep.mean.25<-mean(colSums(sp.25[,c(2:26)])/n.sp)
 rep.mean.35<-mean(colSums(sp.35[,c(2:26)])/n.sp)
 
-refuge.size.systematic<-data.frame(top15=nrow(sp.15),top25=nrow(sp.25),top35=nrow(sp.35),method="Systematic refuges")
+refuge.size.systematic<-data.frame(top15=length.sp.15,top25=length.sp.25,top35=length.sp.35,method="Systematic refuges")
 sp.rep.systematic<-data.frame(top15=rep.mean.15,sd15=sd(rep.15),top25=rep.mean.25,sd25=sd(rep.25),top35=rep.mean.35,sd35=sd(rep.35),method="Systematic refuges")
 
 #---
@@ -141,7 +154,7 @@ library(ggplot2)
 ggplot(data = refuge.size.melt,aes(x=variable,y=value,group=method,color=method))+
   geom_line()+
   geom_point(aes(shape=method,size=4))+theme_classic()+
-  xlab("Threshold / Target")+ylab("Number of stream segments")+
+  xlab("Threshold / Target")+ylab("Length of refuge network (km)")+
   scale_x_discrete(labels=c("top15% / 15%", "top25% / 25%","top35% / 35%"))+
   guides(size=FALSE)+
   labs(title=c("Priority refuge network size"))+
@@ -149,7 +162,7 @@ ggplot(data = refuge.size.melt,aes(x=variable,y=value,group=method,color=method)
   ggsave(filename = "Figures/03_Objective function/Overal representation of each method_1.png",width = 4,height = 4)
 
 ggplot(data = sp.rep.mean.melt,aes(x=variable,y=value,group=Method,color=Method))+
-  geom_errorbar(aes(ymin=value-sd,ymax=value+sd),width=.1,position = position_dodge(0.05))+
+  geom_errorbar(aes(ymin=value-sd,ymax=value+sd),width=.1,position = position_dodge(0.1))+
   geom_line()+
   geom_point(aes(shape=Method,size=4))+theme_classic()+
   xlab("Threshold / Target")+ylab("Mean % of species total distribution")+
