@@ -63,6 +63,11 @@ inundt.SegNo<-inundt.SegNo[-match(delete.seg,inundt.SegNo)]
 
 candidate.seg<-SEQ.networks$SegmentNo[SEQ.networks$Freq>0]
 candidate.seg<-setdiff(candidate.seg,inundt.SegNo)
+
+#SEQ.networks$candidate<-0
+#SEQ.networks$candidate[match(candidate.seg,SEQ.networks$SegmentNo)]<-1
+#writeLinesShape(SEQ.networks,fn="Data/Shapfile/Threshold of quant 0.5/PCA_Water only")
+
 candidate.freq<-data.frame(SegNo=candidate.seg)
 library(dplyr)
 candidate.freq<-left_join(candidate.freq,both.selec[,c(108,109)],by="SegNo")
