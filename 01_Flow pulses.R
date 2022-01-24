@@ -5,7 +5,7 @@
 #---------------------------
 
 #setwd("D:/My Drive/PhD at GU")
-setwd("D:/New folder/Google Drive/PhD at GU")
+setwd("E:/New-folder/Google Drive/PhD at GU")
 
 
 # Directly read in the annual flow pulse from 1911-2017
@@ -27,16 +27,20 @@ flow.pulse.list<-list()
 for(i in 1:length(flow.files)){
   flow.daily.annual<-read.csv(flow.files[i],row.names = 1)
   flow.daily.annual[flow.daily.annual[]<0]<-0
+  head(flow.daily.annual[,1:5])
   
   temp<-data.frame(t(flow.daily.annual))
   temp$Date=gsub("X","",rownames(temp))
+  head(temp[,1:5])
   temp.melt<-melt(temp,id="Date")
-  
+  head(temp.melt)
   temp.ts<-ts.format(temp.melt[,c(1,3)],format = "%Y.%m.%d")
   temp.ts$SegNo<-gsub("X","",temp.melt$variable)
+  head(temp.ts)
   
   #temp.ddply<-ddply(temp.ts,.(SegNo),function(x) high.spells(x,threshold = 0.01,plot = FALSE,ann.stats = FALSE))
   temp.ddply<-ddply(temp.ts,.(SegNo),function(x) high.spells(x,quant = 0.5,plot = FALSE,ann.stats = FALSE))
+  head(temp.ddply)
   
   flow.pulse.list[[i]]<-temp.ddply$n.events
   

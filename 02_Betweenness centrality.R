@@ -1,5 +1,5 @@
 #---------------------------
-# This script calcualte betweenness centrality for aquatic refugia prioritisation.
+# This script calculate 'betweenness centrality' for aquatic refugia prioritisation.
 #---------------------------
 
 setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity")
@@ -140,26 +140,29 @@ betweenness.centrality.cl<-function(SegNo,hierarcy){
 #SegNo<-Maroochy.clip$SegmentNo
 #BC.mar<-betweenness.centrality(SegNo = SegNo,hierarcy = hierarchy)
 #saveRDS(BC.mar,file = "BC.maroochy")
-BC.mar<-readRDS("Data/R data/BC.maroochy")
+BC.mar<-readRDS("../../Data/R data/BC.maroochy")
 
 #SegNo<-Southcoast.clip$SegmentNo
 #BC.sth<-betweenness.centrality(SegNo,hierarchy)
 #saveRDS(BC.sth,file="BC.southcoast")
-BC.sth<-readRDS("Data/R data/BC.southcoast")
+BC.sth<-readRDS("../../Data/R data/BC.southcoast")
 
 #SegNo<-Pine.clip$SegmentNo
 #BC.pin<-betweenness.centrality(SegNo,hierarchy)
 #saveRDS(BC.pin,file = "BC.pine")
-BC.pin<-readRDS("Data/R data/BC.pine")
+BC.pin<-readRDS("../../Data/R data/BC.pine")
 
 #SegNo<-Logan.clip$SegmentNo
 #BC.log<-betweenness.centrality(SegNo,hierarchy)
 #saveRDS(BC.log,file = "BC.logan")
-BC.log<-readRDS("Data/R data/BC.logan")
+BC.log<-readRDS("../../Data/R data/BC.logan")
 
 #SegNo<-Brisbane.clip$SegmentNo
 #BC.bne<-betweenness.centrality(SegNo,hierarchy)
-BC.bne<-readRDS("Data/R data/Betweenness Centrality_BNE")
+BC.bne<-readRDS("../../Data/R data/Betweenness Centrality_BNE")
+
+BC.SEQ.raw<-rbind(BC.mar,BC.sth,BC.pin,BC.log,BC.bne)
+summary(BC.SEQ.raw$BC)
 
 # To make BC for stream segments from different river networks comparable,
 # BC values were normalised within each river network before they were compared.

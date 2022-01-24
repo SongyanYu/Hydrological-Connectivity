@@ -1,6 +1,6 @@
 #-----------------------
 # This script aims to use systematic methods to identify priority conservation areas
-# Three mobility group speices are considered at the same time.
+# Three mobility group species are considered at the same time.
 # Author: Songyan Yu
 # Date create: 01/04/2019
 #-----------------------
@@ -10,7 +10,7 @@
 # 1) candidate.df, obtained from running "04_Candidate df.R"
 #------
 
-setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
+setwd("../../")
 
 #----
 # when re-visit, skip the optimisation process and directly read in optimisation outcome.
@@ -275,7 +275,7 @@ library(maptools)
 sdm<-readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 names(sdm)
 species.distribution.df<-sdm@data[,c(186:215)] #check the col number
-species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 non-selecte species
+species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 non-selected species
 n.sp<-colSums(species.distribution.df[,-1])
 
 #SEQ.Clip<-readShapePoly(fn="Data/Shapfile/SEQ_Clip.shp")

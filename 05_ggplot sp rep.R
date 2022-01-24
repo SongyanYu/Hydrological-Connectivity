@@ -5,7 +5,7 @@
 # Date create: 16/08/2019
 #-------------
 
-setwd("D:/New folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
+setwd("D:/New-folder/Google Drive/PhD at GU/Part 4 Hydrologic connectivity/")
 #setwd("D:/My Drive/PhD at GU/Part 4 Hydrologic connectivity/")
 
 #---
@@ -28,11 +28,15 @@ bar.melt$method<-factor(bar.melt$method,levels=c("Water-only refuges","Positiona
 bar.melt$value<-bar.melt$value*100
 
 library(ggplot2)
-ggplot()+geom_bar(data=bar.melt,aes(x=sp,y=value,fill=variable),stat="identity")+
-  facet_grid(method~ .)+theme_classic()+
+ggplot()+
+  geom_bar(data=bar.melt,aes(x=sp,y=value,fill=variable),stat="identity")+
+  facet_grid(method~ .)+
+  theme_classic()+
   scale_fill_grey(start = 1,end = 0.3,labels=c("","Top35% / 35%","Top25% / 25%","Top15% / 15%"))+
   theme(axis.text.x = element_text(angle = 45,vjust = 1,hjust=1))+
-  xlab("Fish species")+ylab("% of species total distribution")+labs(fill=c("Threshold / Target"))+
+  xlab("Fish species")+
+  ylab("% of species total distribution")+
+  labs(fill=c("Threshold / Target"))+
   ggsave(filename = "Figures/03_Objective function/Cumulative representation of each method.png")
 
 #---
@@ -153,11 +157,14 @@ names(sp.rep.mean.melt)[1]<-"Method"
 library(ggplot2)
 ggplot(data = refuge.size.melt,aes(x=variable,y=value,group=method,color=method))+
   geom_line()+
-  geom_point(aes(shape=method,size=4))+theme_classic()+
-  xlab("Threshold / Target")+ylab("Length of refuge network (km)")+
+  geom_point(aes(shape=method,size=4))+
+  theme_classic()+
+  xlab("Threshold / Target")+
+  ylab("Length of refuge network (km)")+
   scale_x_discrete(labels=c("top15% / 15%", "top25% / 25%","top35% / 35%"))+
   guides(size=FALSE)+
-  labs(title=c("Priority refuge network size"))+
+  ylim(500,2000)+
+#  labs(title=c("Priority refuge network size"))+
   theme(legend.position = "none")+
   ggsave(filename = "Figures/03_Objective function/Overal representation of each method_1.png",width = 4,height = 4)
 

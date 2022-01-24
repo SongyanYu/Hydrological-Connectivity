@@ -397,7 +397,7 @@ for(x in 1:length(lst_1)){
 }
 
 
-#--------------------------- Custermised functions-------------------------
+#--------------------------- Custormised functions-------------------------
 Ups_Mobility<-function(SegNo,max.mobility){
   upstream<-allupstream(hierarchy = hierarchy,catchname = SegNo)
   upstream.mobility<-upstream[SEQ.Clip$D2OUTLET[match(upstream,SEQ.Clip$SegmentNo)]-SEQ.Clip$D2OUTLET[match(SegNo,SEQ.Clip$SegmentNo)]<=max.mobility]
