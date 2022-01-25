@@ -1,5 +1,6 @@
 #---
 # this script systematically prioritise refuges for conservation
+# the prioritisation incorporates current protected areas.
 # author: Songyan Yu
 # date created: 24/01/2022
 #---
