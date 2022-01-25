@@ -4,19 +4,22 @@
 # date created: 24/01/2022
 #---
 
+setwd("../../")
+
 # read in candidate data frame
 candidate.df <- readRDS("Data/R_data/03_Candidate_df.RDS")
 candidate.seg <- candidate.df$SegNo
 
 # read in species distribution
-sdm<-maptools::readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
+library(maptools)
+sdm <- readShapeLines(fn="Data/Shapfile/Species distribution model/PCA_Naive_Species.shp")
 names(sdm)
 species.distribution.df<-sdm@data[,c(186:215)] #check the col number
 species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 non-selected species
 n.sp<-colSums(species.distribution.df[,-1])
 
 # read in stream segments within protected areas
-protectedArea.shp <- readShapeLines("Data/Shapfile/SEQ_networks_strahler02_withinProtectedAreas.shp")
+protectedArea.shp <- maptools::readShapeLines("Data/Shapfile/SEQ_networks_strahler02_withinProtectedAreas.shp")
 protected.seg <- protectedArea.shp$SegmentNo
 unique(protected.seg) # check if any duplicates
 sum(protected.seg %in% candidate.seg) / length(protected.seg)
