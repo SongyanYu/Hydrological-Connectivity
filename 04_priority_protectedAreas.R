@@ -156,7 +156,7 @@ for(m in 1:length(scaling.factor)){
     cat("new loop ",i,"\n")
   }
   saveRDS(solution.lst, file = paste0("../../Data/R_data/04_PCA_solution_0", scaling.factor[m],"_protectedAreas.RDS"))
-  saveRDS(n.seg, file = paste0("../../Data/R_data/P04_PCA_size_0", scaling.factor[m], "_protectedAreas.RDS"))
+  saveRDS(n.seg, file = paste0("../../Data/R_data/04_PCA_size_0", scaling.factor[m], "_protectedAreas.RDS"))
   saveRDS(rep.sp, file = paste0("../../Data/R_data/04_PCA_repSp_0", scaling.factor[m], "_protectedAreas.RDS"))
   saveRDS(obj.func, file = paste0("../../Data/R_data/04_PCA_objFunc_0", scaling.factor[m], "_protectedAreas.RDS"))
   saveRDS(int.obj.fun.lst, file = paste0("../../Data/R_data/04_PCA_intObjFunLst_0", scaling.factor[m],"_protectedAreas.RDS"))
