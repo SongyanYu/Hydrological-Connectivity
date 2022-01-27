@@ -10,7 +10,7 @@ calculation <- FALSE
 if (!calculation){
   
   # Directly read in the annual flow pulse from 1911-2017
-  flow.pulse.1911.2017<-readRDS("Data/R data/Annual flow pulse 1911_2017_quant0.5")
+  flow.pulse.1911.2017<-readRDS("../../Data/R_data/Annual flow pulse 1911_2017_quant0.5")
   
 }else{
   

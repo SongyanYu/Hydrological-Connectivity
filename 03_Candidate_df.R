@@ -5,15 +5,13 @@
 #--------------------
 
 # to get 'candidate.df'
-source("Scripts/Hydrological-Connectivity/02_CandidateRefuges.R")
+source("02_CandidateRefuges.R")
 
 #------------
 # RDI
 #------------
-SEQ.clip<-readShapePoly("Data/Shapfile/SEQ_Clip.shp")
+SEQ.clip<-readShapePoly("../../Data/Shapfile/SEQ_Clip.shp")
 RDI.df<-data.frame(SegNo=SEQ.clip$SegmentNo,RDI=SEQ.clip$RDI)
-
-library(dplyr)
 
 candidate.df <- 
   candidate.df %>%
@@ -24,11 +22,11 @@ sum(is.na(candidate.df$RDI))  # should be "0"
 #--------------
 # Betweenness centrality (BC)
 #--------------
-BC.mar<-readRDS("Data/R data/BC.maroochy")
-BC.sth<-readRDS("Data/R data/BC.southcoast")
-BC.pin<-readRDS("Data/R data/BC.pine")
-BC.log<-readRDS("Data/R data/BC.logan")
-BC.bne<-readRDS("Data/R data/Betweenness Centrality_BNE")
+BC.mar<-readRDS("../../Data/R_data/BC.maroochy")
+BC.sth<-readRDS("../../Data/R_data/BC.southcoast")
+BC.pin<-readRDS("../../Data/R_data/BC.pine")
+BC.log<-readRDS("../../Data/R_data/BC.logan")
+BC.bne<-readRDS("../../Data/R_data/Betweenness Centrality_BNE")
 
 # To make BC for stream segments from different river networks comparable,
 # BC values were normalised within each river network before they were compared.
@@ -72,4 +70,4 @@ candidate.df <-
   mutate(Freq.nor = (Freq - min(Freq))/(max(Freq) - min(Freq))) %>%
   select(-Freq)
 
-saveRDS(candidate.df, file = "Data/R_data/03_Candidate_df.RDS")
+saveRDS(candidate.df, file = "../../Data/R_data/03_Candidate_df.RDS")

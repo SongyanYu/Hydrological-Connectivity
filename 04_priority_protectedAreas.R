@@ -5,8 +5,6 @@
 # date created: 24/01/2022
 #---
 
-setwd("../../")
-
 # read in candidate data frame
 candidate.df <- readRDS("../../Data/R_data/03_Candidate_df.RDS")
 candidate.seg <- candidate.df$SegNo
@@ -20,7 +18,7 @@ species.distribution.df<-species.distribution.df[,-c(14,18,21,26)]  # delete 4 n
 n.sp<-colSums(species.distribution.df[,-1])
 
 # read in stream segments within protected areas
-protectedArea.shp <- maptools::readShapeLines("Data/Shapfile/SEQ_networks_strahler02_withinProtectedAreas.shp")
+protectedArea.shp <- maptools::readShapeLines("../../Data/Shapfile/SEQ_networks_strahler02_withinProtectedAreas.shp")
 protected.seg <- protectedArea.shp$SegmentNo
 unique(protected.seg) # check if any duplicates
 sum(protected.seg %in% candidate.seg) / length(protected.seg)
@@ -157,10 +155,10 @@ for(m in 1:length(scaling.factor)){
     
     cat("new loop ",i,"\n")
   }
-  saveRDS(solution.lst, file = paste0("../../Data/R_data/04_PCA_protectedAreas_solution_0", scaling.factor[m],".RDS"))
-  saveRDS(n.seg, file = paste0("../../Data/R_data/P04_PCA_protectedAreas_size_0", scaling.factor[m], ".RDS"))
-  saveRDS(rep.sp, file = paste0("../../Data/R_data/04_PCA_protectedAreas_repSp_0", scaling.factor[m], ".RDS"))
-  saveRDS(obj.func, file = paste0("../../Data/R_data/04_PCA_protectedAreas_objFunc_0", scaling.factor[m], ".RDS"))
-  saveRDS(int.obj.fun.lst, file = paste0("../../Data/R_data/04_PCA_protectedAreas_intObjFunLst_0", scaling.factor[m],".RDS"))
+  saveRDS(solution.lst, file = paste0("../../Data/R_data/04_PCA_solution_0", scaling.factor[m],"_protectedAreas.RDS"))
+  saveRDS(n.seg, file = paste0("../../Data/R_data/P04_PCA_size_0", scaling.factor[m], "_protectedAreas.RDS"))
+  saveRDS(rep.sp, file = paste0("../../Data/R_data/04_PCA_repSp_0", scaling.factor[m], "_protectedAreas.RDS"))
+  saveRDS(obj.func, file = paste0("../../Data/R_data/04_PCA_objFunc_0", scaling.factor[m], "_protectedAreas.RDS"))
+  saveRDS(int.obj.fun.lst, file = paste0("../../Data/R_data/04_PCA_intObjFunLst_0", scaling.factor[m],"_protectedAreas.RDS"))
 }
 

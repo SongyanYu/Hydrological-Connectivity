@@ -5,13 +5,11 @@
 # Date update: 25/01/2022
 #-----------------------------
 
-setwd("../../")
-
 # Pre-required variables
 # 1) daily.sw.1911.2017.df (surface water persistence)
-source("Scripts/Hydrological-Connectivity/01_Surface water persistence.R")
+source("01_SurfaceWaterPersistence.R")
 # 2) flow.pulse.1911.2017 (annual number of flow pulses)
-source("Scripts/Hydrological-Connectivity/01_Flow pulses.R")
+source("01_FlowPulses.R")
 
 #---
 # surface water persistence
@@ -42,7 +40,7 @@ both.selec$SegNo<-as.numeric(daily.sw.1911.2017.df$SegNo)
 both.selec$Freq<-rowSums(both.selec[,c(1:107)])
 
 library(maptools)
-SEQ.networks<-readShapeLines("Data/Shapfile/SEQ_networks_strahler02.shp")
+SEQ.networks<-readShapeLines("../../Data/Shapfile/SEQ_networks_strahler02.shp")
 names(SEQ.networks)
 nrow(SEQ.networks)
 
@@ -54,7 +52,7 @@ names(SEQ.networks)
 # exclude inundated segments
 #---
 # inundated SegNo
-innudt.shp<-readShapeLines("Data/Shapfile/Innudt_SegNo.shp")
+innudt.shp<-readShapeLines("../../Data/Shapfile/Innudt_SegNo.shp")
 inundt.SegNo<-innudt.shp$SegmentNo
 delete.seg<-c(859398,859529,856156)
 inundt.SegNo<-inundt.SegNo[-match(delete.seg,inundt.SegNo)]
@@ -64,6 +62,6 @@ candidate.seg<-setdiff(candidate.seg,inundt.SegNo)
 
 # form a data frame with frequency
 candidate.df <- data.frame(SegNo=candidate.seg)
-library(dplyr)
-candidate.df<-left_join(candidate.df,both.selec[,c(108,109)],by="SegNo")
-sum(is.na(candidate.freq$Freq))  # "0"
+candidate.df <- left_join(candidate.df,both.selec[,c(108,109)],by="SegNo")
+sum(is.na(candidate.df$Freq))  # "0"
+

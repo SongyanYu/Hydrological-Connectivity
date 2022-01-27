@@ -5,7 +5,7 @@
 # update: 25/01/2022
 #------------------------
 
-daily.sw.1911.2017<-readRDS("Data/R data/wet50-days_1911-2017")
+daily.sw.1911.2017<-readRDS("../../Data/R_data/wet50-days_1911-2017")
 
 daily.sw.1911.2017.df<-data.frame(daily.sw.1911.2017)
 colnames(daily.sw.1911.2017.df)<-c(1911:2017)
