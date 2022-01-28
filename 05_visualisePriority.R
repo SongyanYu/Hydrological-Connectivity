@@ -57,18 +57,22 @@ best.solution.lst <- lapply(1:length(solution.files), FUN = function(x){
   priority.seg <- readRDS(solution.files[x])[[best.solution$no[x]]]
   
   priority.df <- data.frame(SegNo = SEQ.network$SegmentNo,
-                            priority = 0)
+                            priority = '0')
   
-  priority.df$priority[priority.df$SegNo %in% priority.seg] <- 1
+  priority.df$priority[priority.df$SegNo %in% priority.seg] <- '1'
   colnames(priority.df)[2] <- paste0(group[[x]],"_",target[[x]])
   priority.df
 })
 
 best.solution.df <- do.call(cbind.data.frame, best.solution.lst)[,c(1,2,4,6,8,10,12)]
-colnames(best.solution.df)
+colnames(best.solution.df)[c(3,5,7)] <- c("Prot_015", "Prot_025", "Prot_035")
 
-SEQ.network@data %>%
-  left_join(., best.solution.df, by = c("SegmentNo" = "SegNo"))
+if(identical(SEQ.network$SegmentNo, best.solution.df$SegNo)){
+  SEQ.network@data <- cbind(SEQ.network@data, best.solution.df[,-1])
+}else{
+  cat("best solution is not integrated to river networks!")
+}
+
 maptools::writeLinesShape(SEQ.network, fn = "../../Data/Shapfile/05_visualisePriority/SEQ_priority")
 
 
