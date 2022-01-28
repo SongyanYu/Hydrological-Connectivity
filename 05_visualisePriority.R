@@ -73,9 +73,7 @@ if(identical(SEQ.network$SegmentNo, best.solution.df$SegNo)){
   cat("best solution is not integrated to river networks!")
 }
 
+# write priority segments into river networks
+# do visualisation with QGIS
 maptools::writeLinesShape(SEQ.network, fn = "../../Data/Shapfile/05_visualisePriority/SEQ_priority")
-
-
-
-
 
