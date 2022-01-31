@@ -36,6 +36,8 @@ image_write(image_all, path = '../../Figures/Fig02_ALL_r.jpg', format = 'jpeg',
             quality = 75)
 gc()
 
+# priority network + selection frequency
+
 priority.015 <- 
   image_read(path = "../../Figures/Fig03_PriorityNetwork_Target15.jpg") %>%
   image_crop("6800x5800+2200+500") %>%
@@ -53,11 +55,6 @@ priority.035 <-
 
 gc()
 
-#image_priority <- image_append(c(priority.015, priority.025, priority.035), stack = TRUE)
-#image_write(image_priority, path = '../../Figures/Fig03_ALL_r.jpg', format = 'jpeg',
-#            quality = 75)
-
-# selection frequency
 selecFreq.015 <- 
   image_read(path = "../../Figures/Fig04_SelecFreq_Target15.jpg") %>%
   image_crop("6800x5800+2200+500") %>%
@@ -81,3 +78,49 @@ image_priority_all <- image_append(c(target_015, target_025, target_035), stack 
 
 image_write(image_priority_all, path = '../../Figures/Fig03_ALL_r.jpg', format = 'jpeg',
             quality = 50)
+
+# priority network + selection frequency (no locked in areas)
+
+priority.015 <- 
+  image_read(path = "../../Figures/Fig03_PriorityNetwork_Target15_NoLockedIn.jpg") %>%
+  image_crop("6800x5800+2200+500") %>%
+  image_annotate("(a)", size = 300, location = "+6000+100")
+
+priority.025 <- 
+  image_read(path = "../../Figures/Fig03_PriorityNetwork_Target25_NoLockedIn.jpg") %>%
+  image_crop("6800x5800+2200+500") %>%
+  image_annotate("(c)", size = 300, location = "+6000+100")
+
+priority.035 <- 
+  image_read(path = "../../Figures/Fig03_PriorityNetwork_Target35_NoLockedIn.jpg") %>%
+  image_crop("6800x5800+2200+500") %>%
+  image_annotate("(e)", size = 300, location = "+6000+100")
+
+gc()
+
+selecFreq.015 <- 
+  image_read(path = "../../Figures/Fig04_SelecFreq_Target15_NoLockedIn.jpg") %>%
+  image_crop("6800x5800+2200+500") %>%
+  image_annotate("(b)", size = 300, location = "+6000+100")
+
+selecFreq.025 <- 
+  image_read(path = "../../Figures/Fig04_SelecFreq_Target25_NoLockedIn.jpg") %>%
+  image_crop("6800x5800+2200+500") %>%
+  image_annotate("(d)", size = 300, location = "+6000+100")
+
+selecFreq.035 <- 
+  image_read(path = "../../Figures/Fig04_SelecFreq_Target35_NoLockedIn.jpg") %>%
+  image_crop("6800x5800+2200+500") %>%
+  image_annotate("(f)", size = 300, location = "+6000+100")
+
+target_015 <- image_append(c(priority.015, selecFreq.015))
+target_025 <- image_append(c(priority.025, selecFreq.025))
+target_035 <- image_append(c(priority.035, selecFreq.035))
+
+image_priority_all <- image_append(c(target_015, target_025, target_035), stack = TRUE)
+
+image_write(image_priority_all, path = '../../Figures/Fig03_ALL_NoAreasLockedIn_r.jpg', format = 'jpeg',
+            quality = 50)
+
+
+
