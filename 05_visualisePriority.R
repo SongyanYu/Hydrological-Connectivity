@@ -70,7 +70,7 @@ colnames(best.solution.df)[c(3,5,7)] <- c("Prot_015", "Prot_025", "Prot_035")
 if(identical(SEQ.network$SegmentNo, best.solution.df$SegNo)){
   SEQ.network@data <- cbind(SEQ.network@data, best.solution.df[,-1])
 }else{
-  cat("best solution is not integrated to river networks!")
+  cat("best solution is not integrated to river networks!\n")
 }
 
 # write priority segments into river networks
