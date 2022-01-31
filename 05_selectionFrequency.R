@@ -29,12 +29,12 @@ freq.lst <- lapply(1:length(solution.files), FUN = function(x){
 #freq.df <- do.call(rbind.data.frame, freq.lst)
 
 # combine selection freq with river networks
-SEQ.network <- maptools::readShapeLines(fn = "../../Data/Shapfile/SEQ_networks_strahler02.shp")
-terra::plot(SEQ.network)
-
 library(dplyr)
 
 for(i in 1:length(freq.lst)){
+  
+  SEQ.network <- maptools::readShapeLines(fn = "../../Data/Shapfile/SEQ_networks_strahler02.shp")
+  
   selecfreq.df <- data.frame(SegNo = as.character(SEQ.network$SegmentNo)) %>%
     left_join(., freq.lst[[i]], by = "SegNo")
   selecfreq.df[is.na(selecfreq.df[,2]),2] <- 0
