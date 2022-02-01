@@ -4,7 +4,6 @@
 # date created: 31/01/2022
 #---
 
-
 library(dplyr)
 
 # species representation
@@ -84,23 +83,29 @@ best.solution.without.protected.areas.length <- sapply(best.solution.without.pro
 # visualise priority network length
 library(ggplot2)
 library(reshape2)
+library(tidyr)
 
 best.solution %>%
   ungroup %>%
   mutate(length = best.solution.length,
          addedSegLength = best.solution.without.protected.areas.length,
-         group = factor(group, levels = c("NO", "protectedAreas"), labels = c("No protected areas locked in", "Protected areas locked in")),
+         protSegLength = best.solution.length - best.solution.without.protected.areas.length,
+         group = factor(group, levels = c("NO", "protectedAreas"), labels = c("No locked in", "Locked in")),
          target = factor(target, levels = c("015", "025", "035"), labels = c("15%", "25%", "35%"))) %>%
-  ggplot() +
-  geom_line(aes(x = target, y = best.solution.length, group = group, colour = group), size = 1) +
-  geom_point(aes(x = target, y = best.solution.length, group = group, colour = group), size = 3) +
+  select(target, addedSegLength, protSegLength, group) %>%
+  pivot_longer(cols = c(addedSegLength, protSegLength)) %>%
+  mutate(name = factor(name, levels = c("addedSegLength", "protSegLength"),
+                       labels = c("Outside protected areas", "Inside protected areas")),
+         value = round(value, 0)) %>%
+  ggplot(aes(x = group, y = value, fill = name)) +
+  geom_bar(position = 'stack', stat = 'identity') +
+  facet_grid(~target) +
   theme_bw() +
-  geom_line(aes(x = target, y = best.solution.without.protected.areas.length, group = group, colour = group), linetype = 2, size = 1) +
-  geom_point(aes(x = target, y = best.solution.without.protected.areas.length, group = group, colour = group), size = 3) +
-  theme(legend.position = c(0.2, 0.85), legend.title = element_blank()) +
   ylab("Length of priority network (km)") +
-  xlab("Conservation target")
-ggsave(filename = "../../Figures/Fig05_PriorityNetworkSzie.jpg",
+  xlab("") +
+  theme(legend.position = 'top', legend.title = element_blank()) +
+  geom_text(aes(label = value),size = 3, position = position_stack(vjust = 0.5))
+ggsave(filename = "../../Figures/Fig05_PriorityNetworkSize.jpg",
        dpi = 800, width = 6, height = 4)
 
 
